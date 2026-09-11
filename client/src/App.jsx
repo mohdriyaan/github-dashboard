@@ -1,12 +1,16 @@
 import { useState } from "react"
 import SearchBar from "./components/SearchBar.jsx"
 import { getUser,  getUserRepos } from "./services/githubService.js"
+import getContributions from "./services/githubGraphqlService.js"
 import repoStats from "./utils/repoStats.js"
+import getContributionStats from "./utils/contributionUtils.js"
+
 
 function App() {
   const [profile , setProfile] = useState("")
   const [result , setResult] = useState("")
   const [repos, setRepos] = useState([])
+  const [contributionStats, setContributionStats] = useState(null)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)                                                                                   
   // Calculate the statistics on every render using the repos state
@@ -16,18 +20,25 @@ function App() {
     try {
       setProfile("")
       setRepos([])
+      setContributionStats(null)
       setError("")
       setIsLoading(true)
-      const [profileData, repoData] = await Promise.all([
+      const [profileData, repoData, contributionsData] = await Promise.all([
         getUser(username),
-        getUserRepos(username)
-      ]) 
+        getUserRepos(username),
+        getContributions(username)
+      ])
+      
+      const calculatedContributionData = getContributionStats(contributionsData)
+
       setProfile(profileData)
       setRepos(repoData)
+      setContributionStats(calculatedContributionData)
     } catch (error) {
       setError("User Not Found")
       setProfile("")
       setRepos([])
+      setContributionStats(null)
     } finally {
       setIsLoading(false)
     }
@@ -87,6 +98,15 @@ function App() {
             )
           })}
         </>  
+      }
+
+      {contributionStats && 
+        <>
+          <h2>Contribution Statistics</h2>
+          <p>Total Contributions: {contributionStats?.totalContributions}</p>
+          <p>Current Streak: {contributionStats?.currentStreak}</p>
+          <p>Longest Streak: {contributionStats?.longestStreak}</p>
+        </>
       }
     </> 
   )
