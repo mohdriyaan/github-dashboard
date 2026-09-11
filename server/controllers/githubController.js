@@ -1,18 +1,29 @@
-const contributionsController = (req,res) => {
-  let { username } = req.body
+import getContributions from "../services/githubGraphqlService.js"
 
-  username = username?.trim()
+const contributionsController = async (req, res) => {
+  try {
+    let { username } = req.body
 
-  if(!username){
-   return res.status(400).json({
-      error : "Username is required"
+    username = username?.trim()
+
+    if (!username) {
+      return res.status(400).json({
+        error: "Username is required"
+      })
+    }
+
+    const contributionCalendar = await getContributions(username)
+
+    return res.status(200).json({
+      contributionCalendar
+    })
+  } catch (error) {
+    return res.status(500).json({
+      error : error.message
     })
   }
 
-  return res.status(200).json({
-    username
-  })
 }
 
-export {contributionsController}
+export { contributionsController }
 
