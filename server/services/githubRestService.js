@@ -17,21 +17,36 @@ const getUser = async (username) => {
 }
 
 const getUserRepos = async (username) => {
-  const res = await fetch(`https://api.github.com/users/${username}/repos`)
+  const allRepos = []
+  let page = 1
 
-  if (!res.ok) {
-    const errorData = await res.json()
+  while (true) {
+    const res = await fetch(`https://api.github.com/users/${username}/repos?page=${page}&per_page=100`)
 
-    const error = new Error(
-      errorData.message || "Unable to fetch GitHub repositories"
-    )
+    if (!res.ok) {
+      const errorData = await res.json()
 
-    error.status = res.status
+      const error = new Error(
+        errorData.message || "Unable to fetch GitHub repositories"
+      )
 
-    throw error
+      error.status = res.status
+
+      throw error
+    }
+
+    const repos = await res.json()
+
+    allRepos.push(...repos)
+
+    if (repos.length < 100) {
+      break
+    }
+
+    page += 1
   }
 
-  return await res.json()
+  return allRepos
 }
 
 export { getUser, getUserRepos }
