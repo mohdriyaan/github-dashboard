@@ -1,10 +1,8 @@
 import { useState } from "react"
 import SearchBar from "./components/SearchBar.jsx"
 import { getUser,  getUserRepos } from "./services/githubService.js"
-import getContributions from "./services/githubGraphqlService.js"
+import getContributions from "./services/backendService.js"
 import repoStats from "./utils/repoStats.js"
-import getContributionStats from "./utils/contributionUtils.js"
-
 
 function App() {
   const [profile , setProfile] = useState("")
@@ -29,11 +27,9 @@ function App() {
         getContributions(username)
       ])
       
-      const calculatedContributionData = getContributionStats(contributionsData)
-
       setProfile(profileData)
       setRepos(repoData)
-      setContributionStats(calculatedContributionData)
+      setContributionStats(contributionsData.stats)
     } catch (error) {
       setError("User Not Found")
       setProfile("")
