@@ -1,4 +1,5 @@
 import getContributions from "../services/githubGraphqlService.js"
+import getContributionStats from "../utils/contributionUtils.js"
 
 const contributionsController = async (req, res) => {
   try {
@@ -14,8 +15,11 @@ const contributionsController = async (req, res) => {
 
     const contributionCalendar = await getContributions(username)
 
+    const stats = getContributionStats(contributionCalendar)
+
     return res.status(200).json({
-      contributionCalendar
+      contributionCalendar,
+      stats
     })
   } catch (error) {
     return res.status(500).json({

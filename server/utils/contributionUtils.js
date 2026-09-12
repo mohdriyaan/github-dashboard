@@ -1,5 +1,5 @@
 const flattenContributionDays = (result) => {
-  const weeks = result.user.contributionsCollection.contributionCalendar.weeks
+  const weeks = result.weeks
 
   const flattenedDays = weeks.flatMap((week)=>{
     return week.contributionDays.map((day)=> ({

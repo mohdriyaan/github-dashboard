@@ -45,7 +45,17 @@ async function getContributions(username) {
 
   const data = await res.json()
 
-  return data
+  if(data.errors){
+    throw new Error(data.errors[0].message)
+  }
+
+  if(!data.data?.user){
+    throw new Error("Github user not found")
+  }
+
+  const contributionCalendar = data.data.user.contributionsCollection.contributionCalendar
+
+  return contributionCalendar
 }
 
 export default getContributions
