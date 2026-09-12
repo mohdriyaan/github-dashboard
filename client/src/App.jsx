@@ -1,20 +1,29 @@
 import { useState } from "react"
 import SearchBar from "./components/SearchBar.jsx"
-import { getUser,  getUserRepos } from "./services/githubService.js"
+import { getUser, getUserRepos } from "./services/githubService.js"
 import getContributions from "./services/backendService.js"
 import repoStats from "./utils/repoStats.js"
 
+const getErrorMessage = (status) => {
+  if (status === 400) return "Username is required"
+  if (status === 404) return "GitHub user not found"
+  if (status === 401) return "GitHub authentication failed"
+  if (status === 429) return "GitHub rate limit exceeded"
+  if (status >= 500) return "Server error. Please try again"
+  return "Something went wrong"
+}
+
 function App() {
-  const [profile , setProfile] = useState("")
-  const [result , setResult] = useState("")
+  const [profile, setProfile] = useState("")
+  const [result, setResult] = useState("")
   const [repos, setRepos] = useState([])
   const [contributionStats, setContributionStats] = useState(null)
   const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)                                                                                   
+  const [isLoading, setIsLoading] = useState(false)
   // Calculate the statistics on every render using the repos state
   const stats = repoStats(repos);
 
-  async function getProfile(username){
+  async function getProfile(username) {
     try {
       setProfile("")
       setRepos([])
@@ -26,12 +35,12 @@ function App() {
         getUserRepos(username),
         getContributions(username)
       ])
-      
+
       setProfile(profileData)
       setRepos(repoData)
       setContributionStats(contributionsData.stats)
     } catch (error) {
-      setError("User Not Found")
+      setError(getErrorMessage(error.status))
       setProfile("")
       setRepos([])
       setContributionStats(null)
@@ -40,7 +49,17 @@ function App() {
     }
   }
 
-  function onSearch(username){
+  function onSearch(username) {
+    username = username.trim()
+
+    if (!username) {
+      setError("Username is required")
+      setProfile("")
+      setRepos([])
+      setContributionStats(null)
+      return
+    }
+    
     setResult(username)
     getProfile(username)
   }
@@ -62,12 +81,12 @@ function App() {
           <p>Name: {profile?.name}</p>
           <p>Followers: {profile?.followers}</p>
           <p>Public Repos: {profile?.public_repos}</p>
-        </div> 
+        </div>
       }
 
-      <br/>
+      <br />
 
-      {repos.length>0 && 
+      {repos.length > 0 &&
         <>
           <h2>Repository Statistics</h2>
           <p>Total Stars: {stats?.totalStars}</p>
@@ -76,12 +95,12 @@ function App() {
         </>
       }
 
-      <br/>
+      <br />
 
-      {repos.length>0 && 
+      {repos.length > 0 &&
         <>
           <h2>Repositories</h2>
-          {repos.map((repo)=>{
+          {repos.map((repo) => {
             return (
               <div key={repo.id}>
                 <p>Name: {repo?.name}</p>
@@ -89,14 +108,14 @@ function App() {
                 <p>Total Stars: {repo?.stargazers_count}</p>
                 <p>Total Forks: {repo?.forks_count}</p>
                 <p>Most used language: {repo?.language}</p>
-                <br/>
+                <br />
               </div>
             )
           })}
-        </>  
+        </>
       }
 
-      {contributionStats && 
+      {contributionStats &&
         <>
           <h2>Contribution Statistics</h2>
           <p>Total Contributions: {contributionStats?.totalContributions}</p>
@@ -104,9 +123,9 @@ function App() {
           <p>Longest Streak: {contributionStats?.longestStreak}</p>
         </>
       }
-    </> 
+    </>
   )
-      
+
 }
 
 export default App

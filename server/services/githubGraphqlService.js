@@ -19,6 +19,12 @@ const query = `
   }
 `
 
+const createError = (message, status) => {
+  const error = new Error(message)
+  error.status = status
+  return error
+}
+
 async function getContributions(username) {
   const currentDate = new Date()
   const currentYear = currentDate.getFullYear()
@@ -43,14 +49,18 @@ async function getContributions(username) {
     })
   })
 
+  if (!res.ok) {
+    throw createError(`GitHub request failed with status ${res.status}`, res.status)
+  }
+
   const data = await res.json()
 
   if(data.errors){
-    throw new Error(data.errors[0].message)
+    throw createError(data.errors[0].message, 500)
   }
 
   if(!data.data?.user){
-    throw new Error("Github user not found")
+    throw createError("Github user not found", 404)
   }
 
   const contributionCalendar = data.data.user.contributionsCollection.contributionCalendar
