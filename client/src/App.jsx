@@ -1,7 +1,6 @@
 import { useState } from "react"
 import SearchBar from "./components/SearchBar.jsx"
-import { getUser, getUserRepos } from "./services/githubService.js"
-import getContributions from "./services/backendService.js"
+import {getContributions, getProfile, getRepos} from "./services/backendService.js"
 import repoStats from "./utils/repoStats.js"
 
 const getErrorMessage = (status) => {
@@ -23,7 +22,7 @@ function App() {
   // Calculate the statistics on every render using the repos state
   const stats = repoStats(repos);
 
-  async function getProfile(username) {
+  async function getUserData(username) {
     try {
       setProfile("")
       setRepos([])
@@ -31,13 +30,13 @@ function App() {
       setError("")
       setIsLoading(true)
       const [profileData, repoData, contributionsData] = await Promise.all([
-        getUser(username),
-        getUserRepos(username),
+        getProfile(username),
+        getRepos(username),
         getContributions(username)
       ])
 
       setProfile(profileData)
-      setRepos(repoData)
+      setRepos(repoData.repos)
       setContributionStats(contributionsData.stats)
     } catch (error) {
       setError(getErrorMessage(error.status))
@@ -59,9 +58,9 @@ function App() {
       setContributionStats(null)
       return
     }
-    
+
     setResult(username)
-    getProfile(username)
+    getUserData(username)
   }
 
   return (
