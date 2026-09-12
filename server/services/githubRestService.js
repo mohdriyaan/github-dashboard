@@ -1,3 +1,17 @@
+const getGitHubErrorStatus = (res) => {
+  const remaining = res.headers.get("x-ratelimit-remaining")
+
+  if (res.status === 429) {
+    return 429
+  }
+
+  if (res.status === 403 && remaining === "0") {
+    return 429
+  }
+
+  return res.status
+}
+
 const getUser = async (username) => {
   const res = await fetch(`https://api.github.com/users/${username}`)
 
@@ -8,7 +22,7 @@ const getUser = async (username) => {
       errorData.message || "Unable to fetch GitHub user"
     )
 
-    error.status = res.status
+    error.status = getGitHubErrorStatus(res)
 
     throw error
   }
@@ -30,7 +44,7 @@ const getUserRepos = async (username) => {
         errorData.message || "Unable to fetch GitHub repositories"
       )
 
-      error.status = res.status
+      error.status = getGitHubErrorStatus(res)
 
       throw error
     }
