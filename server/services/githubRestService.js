@@ -12,19 +12,23 @@ const getGitHubErrorStatus = (res) => {
   return res.status
 }
 
+const handleGitHubError = async (res, fallbackMessage) => {
+  const errorData = await res.json()
+
+  const error = new Error(
+    errorData.message || fallbackMessage
+  )
+
+  error.status = getGitHubErrorStatus(res)
+
+  throw error
+}
+
 const getUser = async (username) => {
   const res = await fetch(`https://api.github.com/users/${username}`)
 
   if (!res.ok) {
-    const errorData = await res.json()
-
-    const error = new Error(
-      errorData.message || "Unable to fetch GitHub user"
-    )
-
-    error.status = getGitHubErrorStatus(res)
-
-    throw error
+    await handleGitHubError(res, "Unable to fetch GitHub user")
   }
 
   return res.json()
@@ -38,15 +42,7 @@ const getUserRepos = async (username) => {
     const res = await fetch(`https://api.github.com/users/${username}/repos?page=${page}&per_page=100`)
 
     if (!res.ok) {
-      const errorData = await res.json()
-
-      const error = new Error(
-        errorData.message || "Unable to fetch GitHub repositories"
-      )
-
-      error.status = getGitHubErrorStatus(res)
-
-      throw error
+      await handleGitHubError(res, "Unable to fetch GitHub repositories")
     }
 
     const repos = await res.json()
