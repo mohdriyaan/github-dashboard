@@ -7,6 +7,8 @@ import StatsGrid from "./components/StatsGrid.jsx"
 import RepositoryList from "./components/RepositoryList.jsx"
 import ContributionStats from "./components/ContributionStats.jsx"
 import ActivityGraph from "./components/ActivityGraph.jsx"
+import DashboardHeader from "./components/DashboardHeader.jsx"
+
 
 const getErrorMessage = (status) => {
   if (status === 400) return "Username is required"
@@ -19,7 +21,6 @@ const getErrorMessage = (status) => {
 
 function App() {
   const [profile, setProfile] = useState("")
-  const [result, setResult] = useState("")
   const [repos, setRepos] = useState([])
   const [contributionStats, setContributionStats] = useState(null)
   const [contributionCalendar, setContributionCalendar] = useState(null)
@@ -69,15 +70,15 @@ function App() {
       return
     }
 
-    setResult(username)
     getUserData(username)
   }
 
   return (
     <>
-      <h1 className="text-2xl font-bold p-5">Github Profile Finder</h1>
-      <SearchBar onSearch={onSearch} isLoading={isLoading} />
-      <p>Searched username : {result}</p>
+      <DashboardHeader 
+        onSearch={onSearch}
+        isLoading={isLoading}
+      />
 
       {isLoading && "Loading..."}
 

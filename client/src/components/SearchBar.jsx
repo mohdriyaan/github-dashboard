@@ -14,7 +14,7 @@ function SearchBar({ onSearch, isLoading }) {
   }
 
   return (
-    <div className="flex w-full max-w-md gap-2 p-5">
+    <div className="flex w-full max-w-md gap-2">
       <Input
         type="text"
         value={username}
