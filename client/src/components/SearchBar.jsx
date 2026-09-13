@@ -1,6 +1,7 @@
+import { useState } from "react"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useState } from "react"
 
 function SearchBar({ onSearch, isLoading }) {
   const [username, setUsername] = useState("")
@@ -11,6 +12,13 @@ function SearchBar({ onSearch, isLoading }) {
 
   function handleSearch() {
     onSearch(username)
+    setUsername("")
+  }
+
+  function handleKeyDown(event) {
+    if (event.key === "Enter") {
+      handleSearch()
+    }
   }
 
   return (
@@ -20,8 +28,17 @@ function SearchBar({ onSearch, isLoading }) {
         value={username}
         placeholder="Enter GitHub username"
         onChange={onChange}
+        onKeyDown={handleKeyDown}
+        disabled={isLoading}
       />
-      <Button onClick={handleSearch} disabled={isLoading}>{isLoading ? "Loading..." : "Search"}</Button>
+
+      <Button
+        type="button"
+        onClick={handleSearch}
+        disabled={isLoading}
+      >
+        {isLoading ? "Loading..." : "Search"}
+      </Button>
     </div>
   )
 }

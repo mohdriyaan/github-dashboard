@@ -16,6 +16,7 @@ import ActivityGraph from "./components/ActivityGraph.jsx"
 import DashboardHeader from "./components/DashboardHeader.jsx"
 import DashboardSkeleton from "./components/DashboardSkeleton.jsx"
 import EmptyState from "./components/EmptyState.jsx"
+import ErrorState from "./components/ErrorState.jsx"
 
 const getErrorMessage = (status) => {
   if (status === 400) return "Username is required"
@@ -32,6 +33,8 @@ function App() {
   const [repos, setRepos] = useState([])
   const [contributionStats, setContributionStats] = useState(null)
   const [contributionCalendar, setContributionCalendar] = useState(null)
+
+  const [searchedUsername, setSearchedUsername] = useState("")
 
   const [profileError, setProfileError] = useState("")
   const [reposError, setReposError] = useState("")
@@ -60,7 +63,11 @@ function App() {
         getContributions(username),
       ])
 
-      const [profileResult, reposResult, contributionsResult] = results
+      const [
+        profileResult,
+        reposResult,
+        contributionsResult,
+      ] = results
 
       if (profileResult.status === "fulfilled") {
         setProfile(profileResult.value)
@@ -82,6 +89,7 @@ function App() {
         setContributionCalendar(
           contributionsResult.value.contributionCalendar
         )
+
         setContributionStats(
           contributionsResult.value.stats
         )
@@ -106,6 +114,8 @@ function App() {
       setContributionStats(null)
       setContributionCalendar(null)
 
+      setSearchedUsername("")
+
       setProfileError("Username is required")
       setReposError("")
       setContributionsError("")
@@ -113,7 +123,14 @@ function App() {
       return
     }
 
+    setSearchedUsername(username)
     getUserData(username)
+  }
+
+  function retrySearch() {
+    if (!searchedUsername) return
+
+    getUserData(searchedUsername)
   }
 
   return (
@@ -128,26 +145,33 @@ function App() {
           {isLoading && <DashboardSkeleton />}
 
           {!isLoading && profileError && !profile && (
-            <p className="text-sm text-destructive">
-              {profileError}
-            </p>
+            <ErrorState
+              title="Unable to load profile"
+              description={profileError}
+              actionLabel="Try again"
+              onAction={retrySearch}
+            />
           )}
 
           {!isLoading && profile && (
             <ProfileCard profile={profile} />
           )}
 
-          {!isLoading && profile && !reposError && repos.length > 0 && (
-            <StatsGrid stats={stats} />
-          )}
+          {!isLoading &&
+            profile &&
+            !reposError &&
+            repos.length > 0 && (
+              <StatsGrid stats={stats} />
+            )}
 
           {!isLoading && profile && (
             reposError ? (
-              <section className="border-y border-border py-12">
-                <p className="text-sm text-destructive">
-                  {reposError}
-                </p>
-              </section>
+              <ErrorState
+                title="Unable to load repositories"
+                description="Repositories could not be loaded for this profile."
+                actionLabel="Try again"
+                onAction={retrySearch}
+              />
             ) : repos.length > 0 ? (
               <RepositoryList repos={repos} />
             ) : (
@@ -160,11 +184,13 @@ function App() {
 
           {!isLoading && profile && (
             contributionsError ? (
-              <section className="border-y border-border py-12">
-                <p className="text-sm text-destructive">
-                  {contributionsError}
-                </p>
-              </section>
+              <ErrorState
+                icon={Activity}
+                title="Unable to load contributions"
+                description="Contribution activity could not be loaded for this profile."
+                actionLabel="Try again"
+                onAction={retrySearch}
+              />
             ) : contributionCalendar && contributionStats ? (
               <ActivityGraph
                 calendar={contributionCalendar}
