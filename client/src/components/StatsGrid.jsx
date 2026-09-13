@@ -3,7 +3,7 @@ import { Star, GitFork, Code2 } from "lucide-react"
 const StatsGrid = ({ stats }) => {
   return (
     <section className="border-y border-border py-5">
-      <div className="flex flex-wrap items-center gap-x-12 gap-y-4">
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
         <div className="inline-flex items-center gap-3">
           <Star className="size-5 text-muted-foreground" />
 
