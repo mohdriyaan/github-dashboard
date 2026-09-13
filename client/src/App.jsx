@@ -284,6 +284,28 @@ function App() {
                 onAction={retryRepos}
                 isLoading={isReposLoading}
               />
+            ) : isReposLoading ? (
+              <section
+                aria-label="Loading repositories"
+                className="border-y border-border py-6 sm:py-7"
+              >
+                <div className="space-y-6">
+                  {[1, 2, 3].map((item) => (
+                    <div
+                      key={item}
+                      className="animate-pulse border-b border-border pb-6 last:border-b-0 last:pb-0 sm:pb-7"
+                    >
+                      <div className="h-5 w-2/5 rounded bg-muted" />
+
+                      <div className="mt-3 h-4 w-full max-w-2xl rounded bg-muted" />
+
+                      <div className="mt-2 h-4 w-3/4 max-w-xl rounded bg-muted" />
+
+                      <div className="mt-4 h-4 w-32 rounded bg-muted" />
+                    </div>
+                  ))}
+                </div>
+              </section>
             ) : repos.length > 0 ? (
               <RepositoryList repos={repos} />
             ) : (
