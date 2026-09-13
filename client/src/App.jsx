@@ -43,6 +43,10 @@ function App() {
 
   const [isLoading, setIsLoading] = useState(false)
 
+  const [isProfileLoading, setIsProfileLoading] = useState(false)
+  const [isReposLoading, setIsReposLoading] = useState(false)
+  const [isContributionsLoading, setIsContributionsLoading] = useState(false)
+
   const stats = repoStats(repos)
 
   async function getUserData(username) {
@@ -110,6 +114,7 @@ function App() {
     if (!searchedUsername) return
 
     setProfileError("")
+    setIsProfileLoading(true)
 
     try {
       const profileData = await getProfile(searchedUsername)
@@ -118,6 +123,8 @@ function App() {
       setProfileError(
         getErrorMessage(error?.status)
       )
+    } finally {
+      setIsProfileLoading(false)
     }
   }
 
@@ -125,6 +132,7 @@ function App() {
     if (!searchedUsername) return
 
     setContributionsError("")
+    setIsContributionsLoading(true)
 
     try {
       const contributionsData = await getContributions(
@@ -142,6 +150,8 @@ function App() {
       setContributionsError(
         getErrorMessage(error?.status)
       )
+    } finally {
+      setIsContributionsLoading(false)
     }
   }
 
@@ -149,6 +159,7 @@ function App() {
     if (!searchedUsername) return
 
     setReposError("")
+    setIsReposLoading(true)
 
     try {
       const reposData = await getRepos(searchedUsername)
@@ -157,6 +168,8 @@ function App() {
       setReposError(
         getErrorMessage(error?.status)
       )
+    } finally {
+      setIsReposLoading(false)
     }
   }
 
