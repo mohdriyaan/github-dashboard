@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Activity } from "lucide-react"
 
 import {
   getContributions,
@@ -14,6 +15,7 @@ import RepositoryList from "./components/RepositoryList.jsx"
 import ActivityGraph from "./components/ActivityGraph.jsx"
 import DashboardHeader from "./components/DashboardHeader.jsx"
 import DashboardSkeleton from "./components/DashboardSkeleton.jsx"
+import EmptyState from "./components/EmptyState.jsx"
 
 const getErrorMessage = (status) => {
   if (status === 400) return "Username is required"
@@ -29,8 +31,7 @@ function App() {
   const [profile, setProfile] = useState("")
   const [repos, setRepos] = useState([])
   const [contributionStats, setContributionStats] = useState(null)
-  const [contributionCalendar, setContributionCalendar] =
-    useState(null)
+  const [contributionCalendar, setContributionCalendar] = useState(null)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
@@ -99,30 +100,45 @@ function App() {
         <div className="space-y-14">
           {isLoading && <DashboardSkeleton />}
 
-          {!profile && error && (
+          {!isLoading && !profile && error && (
             <p className="text-sm text-destructive">
               {error}
             </p>
           )}
 
-          {profile && (
+          {!isLoading && profile && (
             <ProfileCard profile={profile} />
           )}
 
-          {repos.length > 0 && (
+          {!isLoading && profile && repos.length > 0 && (
             <StatsGrid stats={stats} />
           )}
 
-          {repos.length > 0 && (
-            <RepositoryList repos={repos} />
+          {!isLoading && profile && (
+            repos.length > 0 ? (
+              <RepositoryList repos={repos} />
+            ) : (
+              <EmptyState
+                title="No repositories"
+                description="This profile doesn't have any public repositories."
+              />
+            )
           )}
 
-          {contributionCalendar && contributionStats && (
-            <ActivityGraph
-              calendar={contributionCalendar}
-              stats={contributionStats}
-              isLoading={false}
-            />
+          {!isLoading && profile && (
+            contributionCalendar && contributionStats ? (
+              <ActivityGraph
+                calendar={contributionCalendar}
+                stats={contributionStats}
+                isLoading={false}
+              />
+            ) : (
+              <EmptyState
+                icon={Activity}
+                title="No contribution activity"
+                description="There is no contribution activity available for this profile."
+              />
+            )
           )}
         </div>
       </main>
