@@ -13,6 +13,7 @@ import StatsGrid from "./components/StatsGrid.jsx"
 import RepositoryList from "./components/RepositoryList.jsx"
 import ActivityGraph from "./components/ActivityGraph.jsx"
 import DashboardHeader from "./components/DashboardHeader.jsx"
+import DashboardSkeleton from "./components/DashboardSkeleton.jsx"
 
 const getErrorMessage = (status) => {
   if (status === 400) return "Username is required"
@@ -96,11 +97,7 @@ function App() {
 
       <main className="mx-auto w-full max-w-[1440px] px-6 py-10">
         <div className="space-y-14">
-          {isLoading && (
-            <p className="text-sm text-muted-foreground">
-              Loading...
-            </p>
-          )}
+          {isLoading && <DashboardSkeleton />}
 
           {!profile && error && (
             <p className="text-sm text-destructive">
@@ -124,7 +121,7 @@ function App() {
             <ActivityGraph
               calendar={contributionCalendar}
               stats={contributionStats}
-              isLoading={isLoading}
+              isLoading={false}
             />
           )}
         </div>
