@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,7 +40,17 @@ function SearchBar({ onSearch, isLoading }) {
         disabled={isLoading}
         className="shrink-0"
       >
-        {isLoading ? "Loading..." : "Search"}
+        {isLoading ? (
+          <>
+            <Loader2
+              className="size-4 animate-spin"
+              aria-hidden="true"
+            />
+            <span>Search</span>
+          </>
+        ) : (
+          "Search"
+        )}
       </Button>
     </div>
   )

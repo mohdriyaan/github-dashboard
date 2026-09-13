@@ -106,6 +106,60 @@ function App() {
     }
   }
 
+  async function retryProfile() {
+    if (!searchedUsername) return
+
+    setProfileError("")
+
+    try {
+      const profileData = await getProfile(searchedUsername)
+      setProfile(profileData)
+    } catch (error) {
+      setProfileError(
+        getErrorMessage(error?.status)
+      )
+    }
+  }
+
+  async function retryContributions() {
+    if (!searchedUsername) return
+
+    setContributionsError("")
+
+    try {
+      const contributionsData = await getContributions(
+        searchedUsername
+      )
+
+      setContributionCalendar(
+        contributionsData.contributionCalendar
+      )
+
+      setContributionStats(
+        contributionsData.stats
+      )
+    } catch (error) {
+      setContributionsError(
+        getErrorMessage(error?.status)
+      )
+    }
+  }
+
+  async function retryRepos() {
+    if (!searchedUsername) return
+
+    setReposError("")
+
+    try {
+      const reposData = await getRepos(searchedUsername)
+      setRepos(reposData.repos)
+    } catch (error) {
+      setReposError(
+        getErrorMessage(error?.status)
+      )
+    }
+  }
+
   function onSearch(username) {
     username = username.trim()
 
@@ -162,7 +216,7 @@ function App() {
                 title="Unable to load profile"
                 description={profileError}
                 actionLabel="Try again"
-                onAction={retrySearch}
+                onAction={retryProfile}
               />
             )}
 
@@ -179,7 +233,7 @@ function App() {
                 title="Unable to load contributions"
                 description="Contribution activity could not be loaded for this profile."
                 actionLabel="Try again"
-                onAction={retrySearch}
+                onAction={retryContributions}
               />
             ) : contributionCalendar &&
               contributionStats ? (
@@ -212,7 +266,7 @@ function App() {
                 title="Unable to load repositories"
                 description="Repositories could not be loaded for this profile."
                 actionLabel="Try again"
-                onAction={retrySearch}
+                onAction={retryRepos}
               />
             ) : repos.length > 0 ? (
               <RepositoryList repos={repos} />
