@@ -1,4 +1,4 @@
-import { TriangleAlert } from "lucide-react"
+import { Loader2, TriangleAlert } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 
@@ -8,6 +8,7 @@ const ErrorState = ({
   description,
   actionLabel,
   onAction,
+  isLoading = false,
 }) => {
   return (
     <section className="flex flex-col items-center justify-center border-y border-border py-12 text-center">
@@ -29,9 +30,20 @@ const ErrorState = ({
           type="button"
           variant="outline"
           onClick={onAction}
+          disabled={isLoading}
           className="mt-5"
         >
-          {actionLabel}
+          {isLoading ? (
+            <>
+              <Loader2
+                className="size-4 animate-spin"
+                aria-hidden="true"
+              />
+              <span>Retrying...</span>
+            </>
+          ) : (
+            actionLabel
+          )}
         </Button>
       )}
     </section>

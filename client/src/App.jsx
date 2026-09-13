@@ -230,6 +230,7 @@ function App() {
                 description={profileError}
                 actionLabel="Try again"
                 onAction={retryProfile}
+                isLoading={isProfileLoading}
               />
             )}
 
@@ -247,6 +248,7 @@ function App() {
                 description={contributionsError}
                 actionLabel="Try again"
                 onAction={retryContributions}
+                isLoading={isContributionsLoading}
               />
             ) : contributionCalendar &&
               contributionStats ? (
@@ -280,6 +282,7 @@ function App() {
                 description={reposError}
                 actionLabel="Try again"
                 onAction={retryRepos}
+                isLoading={isReposLoading}
               />
             ) : repos.length > 0 ? (
               <RepositoryList repos={repos} />
