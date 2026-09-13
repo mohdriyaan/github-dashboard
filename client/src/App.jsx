@@ -2,6 +2,10 @@ import { useState } from "react"
 import SearchBar from "./components/SearchBar.jsx"
 import {getContributions, getProfile, getRepos} from "./services/backendService.js"
 import repoStats from "./utils/repoStats.js"
+import ProfileCard from "./components/ProfileCard.jsx"
+import StatsGrid from "./components/StatsGrid.jsx"
+import RepositoryList from "./components/RepositoryList.jsx"
+import ContributionStats from "./components/ContributionStats.jsx"
 
 const getErrorMessage = (status) => {
   if (status === 400) return "Username is required"
@@ -74,53 +78,23 @@ function App() {
       {!profile && error}
 
       {profile &&
-        <div>
-          <h2>Profile</h2>
-          <p>Username: {profile?.login} </p>
-          <p>Name: {profile?.name}</p>
-          <p>Followers: {profile?.followers}</p>
-          <p>Public Repos: {profile?.public_repos}</p>
-        </div>
+        <ProfileCard profile={profile}/> 
       }
 
       <br />
 
       {repos.length > 0 &&
-        <>
-          <h2>Repository Statistics</h2>
-          <p>Total Stars: {stats?.totalStars}</p>
-          <p>Total Forks: {stats?.totalForks}</p>
-          <p>Most Used Language: {stats?.mostUsedLanguage}</p>
-        </>
+        <StatsGrid stats={stats} />
       }
 
       <br />
 
       {repos.length > 0 &&
-        <>
-          <h2>Repositories</h2>
-          {repos.map((repo) => {
-            return (
-              <div key={repo.id}>
-                <p>Name: {repo?.name}</p>
-                <p>Description: {repo?.description}</p>
-                <p>Total Stars: {repo?.stargazers_count}</p>
-                <p>Total Forks: {repo?.forks_count}</p>
-                <p>Most used language: {repo?.language}</p>
-                <br />
-              </div>
-            )
-          })}
-        </>
+        <RepositoryList repos={repos}/>   
       }
 
       {contributionStats &&
-        <>
-          <h2>Contribution Statistics</h2>
-          <p>Total Contributions: {contributionStats?.totalContributions}</p>
-          <p>Current Streak: {contributionStats?.currentStreak}</p>
-          <p>Longest Streak: {contributionStats?.longestStreak}</p>
-        </>
+        <ContributionStats stats={contributionStats}/>
       }
     </>
   )
