@@ -210,29 +210,31 @@ const ActivityGraph = ({ calendar, stats, isLoading }) => {
 
                     return (
                       <Tooltip key={day.date}>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            aria-label={`${day.contributionCount} contributions on ${day.date}`}
-                            style={{
-                              gridRow: row,
-                            }}
-                            className={[
-                              "size-[26px] rounded-[5px]",
-                              contributionColors[level],
-                              "transition-opacity",
-                              "hover:opacity-80",
-                              "focus-visible:outline-none",
-                              "focus-visible:ring-2",
-                              "focus-visible:ring-ring",
-                              "focus-visible:ring-offset-2",
-                              "focus-visible:ring-offset-background",
-                              isCurrentStreak
-                                ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                                : "",
-                            ].join(" ")}
-                          />
-                        </TooltipTrigger>
+                        <TooltipTrigger
+                          render={
+                            <button
+                              type="button"
+                              aria-label={`${day.contributionCount} contributions on ${day.date}`}
+                              style={{
+                                gridRow: row,
+                              }}
+                              className={[
+                                "size-[26px] rounded-[5px]",
+                                contributionColors[level],
+                                "transition-opacity",
+                                "hover:opacity-80",
+                                "focus-visible:outline-none",
+                                "focus-visible:ring-2",
+                                "focus-visible:ring-ring",
+                                "focus-visible:ring-offset-2",
+                                "focus-visible:ring-offset-background",
+                                isCurrentStreak
+                                  ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                                  : "",
+                              ].join(" ")}
+                            />
+                          }
+                        />
 
                         <TooltipContent>
                           <p className="font-mono text-sm tabular-nums">
