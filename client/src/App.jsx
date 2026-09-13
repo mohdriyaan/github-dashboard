@@ -250,6 +250,20 @@ function App() {
                 onAction={retryContributions}
                 isLoading={isContributionsLoading}
               />
+            ) : isContributionsLoading ? (
+              <section
+                aria-label="Loading contribution activity"
+                className="border-y border-border py-6 sm:py-7"
+              >
+                <div className="animate-pulse space-y-6">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="h-8 w-48 rounded bg-muted" />
+                    <div className="h-6 w-32 rounded bg-muted" />
+                  </div>
+
+                  <div className="h-[320px] w-full rounded bg-muted" />
+                </div>
+              </section>
             ) : contributionCalendar &&
               contributionStats ? (
               <ActivityGraph
