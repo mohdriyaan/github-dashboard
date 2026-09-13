@@ -231,7 +231,7 @@ function App() {
               <ErrorState
                 icon={Activity}
                 title="Unable to load contributions"
-                description="Contribution activity could not be loaded for this profile."
+                description={contributionsError}
                 actionLabel="Try again"
                 onAction={retryContributions}
               />
@@ -264,7 +264,7 @@ function App() {
             reposError ? (
               <ErrorState
                 title="Unable to load repositories"
-                description="Repositories could not be loaded for this profile."
+                description={reposError}
                 actionLabel="Try again"
                 onAction={retryRepos}
               />
