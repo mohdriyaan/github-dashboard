@@ -17,6 +17,7 @@ import DashboardHeader from "./components/DashboardHeader.jsx"
 import DashboardSkeleton from "./components/DashboardSkeleton.jsx"
 import EmptyState from "./components/EmptyState.jsx"
 import ErrorState from "./components/ErrorState.jsx"
+import LandingState from "./components/LandingState.jsx"
 
 const getErrorMessage = (status) => {
   if (status === 400) return "Username is required"
@@ -142,21 +143,61 @@ function App() {
 
       <main className="mx-auto w-full max-w-[1440px] px-6 py-10">
         <div className="space-y-14">
+
+          {/* Landing state — shown before the first search */}
+          {!isLoading &&
+            !profileError &&
+            !profile && (
+              <LandingState />
+            )}
+
+          {/* Loading state */}
           {isLoading && <DashboardSkeleton />}
 
-          {!isLoading && profileError && !profile && (
-            <ErrorState
-              title="Unable to load profile"
-              description={profileError}
-              actionLabel="Try again"
-              onAction={retrySearch}
-            />
-          )}
+          {/* Profile error */}
+          {!isLoading &&
+            profileError &&
+            !profile && (
+              <ErrorState
+                title="Unable to load profile"
+                description={profileError}
+                actionLabel="Try again"
+                onAction={retrySearch}
+              />
+            )}
 
+          {/* Profile */}
           {!isLoading && profile && (
             <ProfileCard profile={profile} />
           )}
 
+          {/* Contribution activity */}
+          {!isLoading && profile && (
+            contributionsError ? (
+              <ErrorState
+                icon={Activity}
+                title="Unable to load contributions"
+                description="Contribution activity could not be loaded for this profile."
+                actionLabel="Try again"
+                onAction={retrySearch}
+              />
+            ) : contributionCalendar &&
+              contributionStats ? (
+              <ActivityGraph
+                calendar={contributionCalendar}
+                stats={contributionStats}
+                isLoading={false}
+              />
+            ) : (
+              <EmptyState
+                icon={Activity}
+                title="No contribution activity"
+                description="There is no contribution activity available for this profile."
+              />
+            )
+          )}
+
+          {/* Repository stats */}
           {!isLoading &&
             profile &&
             !reposError &&
@@ -164,6 +205,7 @@ function App() {
               <StatsGrid stats={stats} />
             )}
 
+          {/* Repositories */}
           {!isLoading && profile && (
             reposError ? (
               <ErrorState
@@ -178,30 +220,6 @@ function App() {
               <EmptyState
                 title="No repositories"
                 description="This profile doesn't have any public repositories."
-              />
-            )
-          )}
-
-          {!isLoading && profile && (
-            contributionsError ? (
-              <ErrorState
-                icon={Activity}
-                title="Unable to load contributions"
-                description="Contribution activity could not be loaded for this profile."
-                actionLabel="Try again"
-                onAction={retrySearch}
-              />
-            ) : contributionCalendar && contributionStats ? (
-              <ActivityGraph
-                calendar={contributionCalendar}
-                stats={contributionStats}
-                isLoading={false}
-              />
-            ) : (
-              <EmptyState
-                icon={Activity}
-                title="No contribution activity"
-                description="There is no contribution activity available for this profile."
               />
             )
           )}
