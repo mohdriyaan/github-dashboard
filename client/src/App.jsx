@@ -1,11 +1,12 @@
 import { useState } from "react"
 import SearchBar from "./components/SearchBar.jsx"
-import {getContributions, getProfile, getRepos} from "./services/backendService.js"
+import { getContributions, getProfile, getRepos } from "./services/backendService.js"
 import repoStats from "./utils/repoStats.js"
 import ProfileCard from "./components/ProfileCard.jsx"
 import StatsGrid from "./components/StatsGrid.jsx"
 import RepositoryList from "./components/RepositoryList.jsx"
 import ContributionStats from "./components/ContributionStats.jsx"
+import ActivityGraph from "./components/ActivityGraph.jsx"
 
 const getErrorMessage = (status) => {
   if (status === 400) return "Username is required"
@@ -21,6 +22,7 @@ function App() {
   const [result, setResult] = useState("")
   const [repos, setRepos] = useState([])
   const [contributionStats, setContributionStats] = useState(null)
+  const [contributionCalendar, setContributionCalendar] = useState(null)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   // Calculate the statistics on every render using the repos state
@@ -31,6 +33,7 @@ function App() {
       setProfile("")
       setRepos([])
       setContributionStats(null)
+      setContributionCalendar(null)
       setError("")
       setIsLoading(true)
       const [profileData, repoData, contributionsData] = await Promise.all([
@@ -41,9 +44,11 @@ function App() {
 
       setProfile(profileData)
       setRepos(repoData.repos)
+      setContributionCalendar(contributionsData.contributionCalendar)
       setContributionStats(contributionsData.stats)
     } catch (error) {
       setError(getErrorMessage(error.status))
+      setContributionCalendar(null)
       setProfile("")
       setRepos([])
       setContributionStats(null)
@@ -60,6 +65,7 @@ function App() {
       setProfile("")
       setRepos([])
       setContributionStats(null)
+      setContributionCalendar(null)
       return
     }
 
@@ -78,7 +84,7 @@ function App() {
       {!profile && error}
 
       {profile &&
-        <ProfileCard profile={profile}/> 
+        <ProfileCard profile={profile} />
       }
 
       <br />
@@ -90,11 +96,15 @@ function App() {
       <br />
 
       {repos.length > 0 &&
-        <RepositoryList repos={repos}/>   
+        <RepositoryList repos={repos} />
       }
 
-      {contributionStats &&
-        <ContributionStats stats={contributionStats}/>
+      {contributionCalendar && contributionStats &&
+        <ActivityGraph
+          calendar={contributionCalendar}
+          stats={contributionStats}
+          isLoading={isLoading}
+        />
       }
     </>
   )
