@@ -236,7 +236,29 @@ function App() {
 
           {/* Profile */}
           {!isLoading && profile && (
-            <ProfileCard profile={profile} />
+            isProfileLoading ? (
+              <section
+                aria-label="Loading profile"
+                className="border-y border-border py-6 sm:py-7"
+              >
+                <div className="flex animate-pulse flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="flex min-w-0 items-start gap-4 sm:gap-5">
+                    <div className="size-20 shrink-0 rounded-full bg-muted sm:size-24" />
+
+                    <div className="min-w-0 space-y-3">
+                      <div className="h-8 w-48 rounded bg-muted" />
+                      <div className="h-4 w-32 rounded bg-muted" />
+                      <div className="h-4 w-full max-w-2xl rounded bg-muted" />
+                      <div className="h-4 w-3/4 max-w-xl rounded bg-muted" />
+                    </div>
+                  </div>
+
+                  <div className="h-10 w-28 rounded bg-muted" />
+                </div>
+              </section>
+            ) : (
+              <ProfileCard profile={profile} />
+            )
           )}
 
           {/* Contribution activity */}
