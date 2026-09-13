@@ -32,42 +32,66 @@ function App() {
   const [repos, setRepos] = useState([])
   const [contributionStats, setContributionStats] = useState(null)
   const [contributionCalendar, setContributionCalendar] = useState(null)
-  const [error, setError] = useState("")
+
+  const [profileError, setProfileError] = useState("")
+  const [reposError, setReposError] = useState("")
+  const [contributionsError, setContributionsError] = useState("")
+
   const [isLoading, setIsLoading] = useState(false)
 
   const stats = repoStats(repos)
 
   async function getUserData(username) {
-    try {
-      setProfile("")
-      setRepos([])
-      setContributionStats(null)
-      setContributionCalendar(null)
-      setError("")
-      setIsLoading(true)
+    setProfile("")
+    setRepos([])
+    setContributionStats(null)
+    setContributionCalendar(null)
 
-      const [
-        profileData,
-        repoData,
-        contributionsData,
-      ] = await Promise.all([
+    setProfileError("")
+    setReposError("")
+    setContributionsError("")
+
+    setIsLoading(true)
+
+    try {
+      const results = await Promise.allSettled([
         getProfile(username),
         getRepos(username),
         getContributions(username),
       ])
 
-      setProfile(profileData)
-      setRepos(repoData.repos)
-      setContributionCalendar(
-        contributionsData.contributionCalendar
-      )
-      setContributionStats(contributionsData.stats)
-    } catch (error) {
-      setError(getErrorMessage(error.status))
-      setProfile("")
-      setRepos([])
-      setContributionStats(null)
-      setContributionCalendar(null)
+      const [profileResult, reposResult, contributionsResult] = results
+
+      if (profileResult.status === "fulfilled") {
+        setProfile(profileResult.value)
+      } else {
+        setProfileError(
+          getErrorMessage(profileResult.reason?.status)
+        )
+      }
+
+      if (reposResult.status === "fulfilled") {
+        setRepos(reposResult.value.repos)
+      } else {
+        setReposError(
+          getErrorMessage(reposResult.reason?.status)
+        )
+      }
+
+      if (contributionsResult.status === "fulfilled") {
+        setContributionCalendar(
+          contributionsResult.value.contributionCalendar
+        )
+        setContributionStats(
+          contributionsResult.value.stats
+        )
+      } else {
+        setContributionsError(
+          getErrorMessage(
+            contributionsResult.reason?.status
+          )
+        )
+      }
     } finally {
       setIsLoading(false)
     }
@@ -77,11 +101,14 @@ function App() {
     username = username.trim()
 
     if (!username) {
-      setError("Username is required")
       setProfile("")
       setRepos([])
       setContributionStats(null)
       setContributionCalendar(null)
+
+      setProfileError("Username is required")
+      setReposError("")
+      setContributionsError("")
 
       return
     }
@@ -100,9 +127,9 @@ function App() {
         <div className="space-y-14">
           {isLoading && <DashboardSkeleton />}
 
-          {!isLoading && !profile && error && (
+          {!isLoading && profileError && !profile && (
             <p className="text-sm text-destructive">
-              {error}
+              {profileError}
             </p>
           )}
 
@@ -110,12 +137,18 @@ function App() {
             <ProfileCard profile={profile} />
           )}
 
-          {!isLoading && profile && repos.length > 0 && (
+          {!isLoading && profile && !reposError && repos.length > 0 && (
             <StatsGrid stats={stats} />
           )}
 
           {!isLoading && profile && (
-            repos.length > 0 ? (
+            reposError ? (
+              <section className="border-y border-border py-12">
+                <p className="text-sm text-destructive">
+                  {reposError}
+                </p>
+              </section>
+            ) : repos.length > 0 ? (
               <RepositoryList repos={repos} />
             ) : (
               <EmptyState
@@ -126,7 +159,13 @@ function App() {
           )}
 
           {!isLoading && profile && (
-            contributionCalendar && contributionStats ? (
+            contributionsError ? (
+              <section className="border-y border-border py-12">
+                <p className="text-sm text-destructive">
+                  {contributionsError}
+                </p>
+              </section>
+            ) : contributionCalendar && contributionStats ? (
               <ActivityGraph
                 calendar={contributionCalendar}
                 stats={contributionStats}
