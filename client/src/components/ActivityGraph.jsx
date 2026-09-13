@@ -114,7 +114,7 @@ const ActivityGraph = ({ calendar, stats, isLoading }) => {
           </div>
         </div>
 
-        <Skeleton className="h-88 w-full rounded-md" />
+        <Skeleton className="h-[320px] w-full rounded-md" />
       </section>
     )
   }
@@ -133,9 +133,9 @@ const ActivityGraph = ({ calendar, stats, isLoading }) => {
   return (
     <section className="space-y-8">
       {/* Header */}
-      <div className="flex items-end justify-between gap-8">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
         <div className="space-y-3">
-          <h2 className="text-5xl font-semibold tracking-tight">
+          <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             Contribution activity
           </h2>
 
@@ -148,7 +148,7 @@ const ActivityGraph = ({ calendar, stats, isLoading }) => {
         </div>
 
         <div className="shrink-0 text-right">
-          <p className="font-mono text-6xl font-semibold leading-none tracking-tight tabular-nums">
+          <p className="font-mono text-5xl font-semibold leading-none tracking-tight tabular-nums sm:text-6xl">
             {stats?.currentStreak ?? 0}
           </p>
 
@@ -160,7 +160,7 @@ const ActivityGraph = ({ calendar, stats, isLoading }) => {
 
       {/* Graph */}
       <div className="w-full overflow-x-auto rounded-md border border-border">
-        <div className="min-w-[1600px] p-8 md:p-10">
+        <div className="min-w-[1600px] p-6 sm:p-8 md:p-10">
           {/* Month labels */}
           <div className="flex">
             <div className="w-10 shrink-0" />

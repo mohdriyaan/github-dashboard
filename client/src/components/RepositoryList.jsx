@@ -26,7 +26,7 @@ const RepositoryList = ({ repos }) => {
           return (
             <article
               key={repo.id}
-              className="py-7"
+              className="py-6 sm:py-7"
             >
               <div className="flex items-start justify-between gap-8">
                 <div className="min-w-0 flex-1 space-y-4">
@@ -46,7 +46,7 @@ const RepositoryList = ({ repos }) => {
                     />
                   </a>
 
-                  <p className="max-w-4xl text-base leading-7 text-muted-foreground">
+                  <p className="max-w-4xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
                     {repo.description || "No description"}
                   </p>
 
