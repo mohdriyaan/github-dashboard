@@ -22,7 +22,7 @@ function SearchBar({ onSearch, isLoading }) {
   }
 
   return (
-    <div className="flex w-full max-w-md gap-2">
+    <div className="flex w-full max-w-md min-w-0 gap-2">
       <Input
         type="text"
         value={username}
@@ -30,12 +30,14 @@ function SearchBar({ onSearch, isLoading }) {
         onChange={onChange}
         onKeyDown={handleKeyDown}
         disabled={isLoading}
+        className="min-w-0 flex-1"
       />
 
       <Button
         type="button"
         onClick={handleSearch}
         disabled={isLoading}
+        className="shrink-0"
       >
         {isLoading ? "Loading..." : "Search"}
       </Button>
