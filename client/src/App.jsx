@@ -59,6 +59,10 @@ function App() {
     setReposError("")
     setContributionsError("")
 
+    setIsProfileLoading(false)
+    setIsReposLoading(false)
+    setIsContributionsLoading(false)
+
     setIsLoading(true)
 
     try {
