@@ -3,7 +3,12 @@ import { Moon, Sun } from "lucide-react"
 
 import SearchBar from "./SearchBar.jsx"
 
-const DashboardHeader = ({ onSearch, isLoading }) => {
+const DashboardHeader = ({
+  onSearch,
+  isLoading,
+  onCompare,
+  isCompareView,
+}) => {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("theme") || "light"
   })
@@ -36,43 +41,67 @@ const DashboardHeader = ({ onSearch, isLoading }) => {
             GitHub Profile Finder
           </h1>
 
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={
-              theme === "dark"
-                ? "Switch to light mode"
-                : "Switch to dark mode"
-            }
-            className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          >
-            {theme === "dark" ? (
-              <Sun className="size-4" />
-            ) : (
-              <Moon className="size-4" />
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onCompare}
+              aria-pressed={isCompareView}
+              className="inline-flex h-9 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              {isCompareView ? "Profile search" : "Compare"}
+            </button>
 
-          <div className="col-span-2 min-w-0">
-            <SearchBar
-              onSearch={onSearch}
-              isLoading={isLoading}
-            />
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={
+                theme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
+              }
+              className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              {theme === "dark" ? (
+                <Sun className="size-4" />
+              ) : (
+                <Moon className="size-4" />
+              )}
+            </button>
           </div>
+
+          {!isCompareView && (
+            <div className="col-span-2 min-w-0">
+              <SearchBar
+                onSearch={onSearch}
+                isLoading={isLoading}
+              />
+            </div>
+          )}
         </div>
 
         {/* Desktop */}
-        <div className="hidden min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-8 lg:grid">
+        <div className="hidden min-h-16 grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-4 lg:grid">
           <h1 className="shrink-0 text-xl font-semibold tracking-tight">
             GitHub Profile Finder
           </h1>
 
-          <div className="flex min-w-0 justify-center">
-            <SearchBar
-              onSearch={onSearch}
-              isLoading={isLoading}
-            />
-          </div>
+          {isCompareView ? <div /> : (
+            <div className="flex min-w-0 justify-center">
+              <SearchBar
+                onSearch={onSearch}
+                isLoading={isLoading}
+              />
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={onCompare}
+            aria-pressed={isCompareView}
+            className="inline-flex h-9 shrink-0 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            {isCompareView ? "Profile search" : "Compare"}
+          </button>
 
           <button
             type="button"
