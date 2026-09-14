@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Activity } from "lucide-react"
 
 import {
@@ -46,10 +46,13 @@ function App() {
   const [isProfileLoading, setIsProfileLoading] = useState(false)
   const [isReposLoading, setIsReposLoading] = useState(false)
   const [isContributionsLoading, setIsContributionsLoading] = useState(false)
+  const requestIdRef = useRef(0)
 
   const stats = repoStats(repos)
 
   async function getUserData(username) {
+    const requestId = ++requestIdRef.current
+
     setProfile("")
     setRepos([])
     setContributionStats(null)
@@ -77,6 +80,8 @@ function App() {
         reposResult,
         contributionsResult,
       ] = results
+
+      if (requestId !== requestIdRef.current) return
 
       if (profileResult.status === "fulfilled") {
         setProfile(profileResult.value)
@@ -110,30 +115,34 @@ function App() {
         )
       }
     } finally {
-      setIsLoading(false)
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false)
+      }
     }
   }
 
   async function retryProfile() {
     if (!searchedUsername) return
+    const requestId = requestIdRef.current
 
     setProfileError("")
     setIsProfileLoading(true)
 
     try {
       const profileData = await getProfile(searchedUsername)
-      setProfile(profileData)
+      if (requestId === requestIdRef.current) setProfile(profileData)
     } catch (error) {
-      setProfileError(
-        getErrorMessage(error?.status)
-      )
+      if (requestId === requestIdRef.current) {
+        setProfileError(getErrorMessage(error?.status))
+      }
     } finally {
-      setIsProfileLoading(false)
+      if (requestId === requestIdRef.current) setIsProfileLoading(false)
     }
   }
 
   async function retryContributions() {
     if (!searchedUsername) return
+    const requestId = requestIdRef.current
 
     setContributionsError("")
     setIsContributionsLoading(true)
@@ -143,37 +152,35 @@ function App() {
         searchedUsername
       )
 
-      setContributionCalendar(
-        contributionsData.contributionCalendar
-      )
-
-      setContributionStats(
-        contributionsData.stats
-      )
+      if (requestId === requestIdRef.current) {
+        setContributionCalendar(contributionsData.contributionCalendar)
+        setContributionStats(contributionsData.stats)
+      }
     } catch (error) {
-      setContributionsError(
-        getErrorMessage(error?.status)
-      )
+      if (requestId === requestIdRef.current) {
+        setContributionsError(getErrorMessage(error?.status))
+      }
     } finally {
-      setIsContributionsLoading(false)
+      if (requestId === requestIdRef.current) setIsContributionsLoading(false)
     }
   }
 
   async function retryRepos() {
     if (!searchedUsername) return
+    const requestId = requestIdRef.current
 
     setReposError("")
     setIsReposLoading(true)
 
     try {
       const reposData = await getRepos(searchedUsername)
-      setRepos(reposData.repos)
+      if (requestId === requestIdRef.current) setRepos(reposData.repos)
     } catch (error) {
-      setReposError(
-        getErrorMessage(error?.status)
-      )
+      if (requestId === requestIdRef.current) {
+        setReposError(getErrorMessage(error?.status))
+      }
     } finally {
-      setIsReposLoading(false)
+      if (requestId === requestIdRef.current) setIsReposLoading(false)
     }
   }
 
@@ -197,12 +204,6 @@ function App() {
 
     setSearchedUsername(username)
     getUserData(username)
-  }
-
-  function retrySearch() {
-    if (!searchedUsername) return
-
-    getUserData(searchedUsername)
   }
 
   return (
@@ -277,19 +278,7 @@ function App() {
                 isLoading={isContributionsLoading}
               />
             ) : isContributionsLoading ? (
-              <section
-                aria-label="Loading contribution activity"
-                className="border-y border-border py-6 sm:py-7"
-              >
-                <div className="animate-pulse space-y-6">
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="h-8 w-48 rounded bg-muted" />
-                    <div className="h-6 w-32 rounded bg-muted" />
-                  </div>
-
-                  <div className="h-[320px] w-full rounded bg-muted" />
-                </div>
-              </section>
+              <ActivityGraph isLoading />
             ) : contributionCalendar &&
               contributionStats ? (
               <ActivityGraph

@@ -1,4 +1,5 @@
 import dotenv from "dotenv"
+import { normalizeGithubContributionCalendar } from "../../shared/contributionCalendar.js"
 
 dotenv.config()
 
@@ -7,10 +8,19 @@ const query = `
     user(login: $username) {
       contributionsCollection(from : $from, to : $to){
         contributionCalendar {
+          months {
+            firstDay
+            name
+            totalWeeks
+            year
+          }
           weeks {
+          firstDay
           contributionDays {
             date
             contributionCount
+            contributionLevel
+            weekday
           }
         }
         }
@@ -25,14 +35,24 @@ const createError = (message, status) => {
   return error
 }
 
+export const getContributionRange = (now = new Date()) => {
+  const to = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+    23,
+    59,
+    59,
+    999
+  ))
+  const from = new Date(to)
+  from.setUTCDate(from.getUTCDate() - 364)
+
+  return { from: from.toISOString(), to: to.toISOString() }
+}
+
 async function getContributions(username) {
-  const currentDate = new Date()
-  const currentYear = currentDate.getFullYear()
-
-  const previousYear = currentYear - 1
-
-  const previousDate = new Date(currentDate)
-  previousDate.setFullYear(previousYear)
+  const range = getContributionRange()
   const res = await fetch("https://api.github.com/graphql", {
     method: "POST",
     headers: {
@@ -43,11 +63,11 @@ async function getContributions(username) {
       query,
       variables: {
         username,
-        from: previousDate.toISOString(),
-        to: currentDate.toISOString()
+        ...range
       }
     })
   })
+
 
   if (!res.ok) {
     throw createError(`GitHub request failed with status ${res.status}`, res.status)
@@ -69,7 +89,9 @@ async function getContributions(username) {
     throw createError("GitHub user not found", 404)
   }
 
-  const contributionCalendar = data.data.user.contributionsCollection.contributionCalendar
+  const contributionCalendar = normalizeGithubContributionCalendar(
+    data.data.user.contributionsCollection.contributionCalendar
+  )
 
   return contributionCalendar
 }

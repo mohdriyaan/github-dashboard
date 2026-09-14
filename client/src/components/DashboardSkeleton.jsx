@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton"
+import { ActivityGraphSkeleton } from "./ActivityGraph.jsx"
 
 const DashboardSkeleton = () => {
   return (
@@ -61,22 +62,7 @@ const DashboardSkeleton = () => {
         </div>
       </section>
 
-      {/* ActivityGraph skeleton */}
-      <section className="space-y-7">
-        <div className="flex items-end justify-between gap-8">
-          <div className="space-y-3">
-            <Skeleton className="h-12 w-80" />
-            <Skeleton className="h-6 w-60" />
-          </div>
-
-          <div className="space-y-3">
-            <Skeleton className="ml-auto h-14 w-16" />
-            <Skeleton className="ml-auto h-5 w-24" />
-          </div>
-        </div>
-
-        <Skeleton className="h-[320px] w-full rounded-md" />
-      </section>
+      <ActivityGraphSkeleton />
     </div>
   )
 }
