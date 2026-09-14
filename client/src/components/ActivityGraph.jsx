@@ -1,3 +1,5 @@
+import { useMemo, useState } from "react"
+
 import {
   Tooltip,
   TooltipContent,
@@ -6,17 +8,31 @@ import {
 
 import { Skeleton } from "@/components/ui/skeleton"
 
-const contributionColors = {
-  0: "bg-contrib-0",
-  1: "bg-contrib-1",
-  2: "bg-contrib-2",
-  3: "bg-contrib-3",
-  4: "bg-contrib-4",
+const GRAPH = {
+  cellSize: 11,
+  gap: 3,
+  labelWidth: 28,
+  monthRowHeight: 18,
+  weekCount: 53,
 }
 
-const dayLabels = ["M", "T", "W", "T", "F", "S", "S"]
+const GRAPH_WIDTH =
+  GRAPH.labelWidth +
+  GRAPH.weekCount * GRAPH.cellSize +
+  (GRAPH.weekCount - 1) * GRAPH.gap
 
-const getContributionLevel = (count) => {
+const GRAPH_HEIGHT =
+  GRAPH.monthRowHeight +
+  7 * GRAPH.cellSize +
+  6 * GRAPH.gap
+
+const dayLabels = [
+  { label: "M", row: 0 },
+  { label: "W", row: 2 },
+  { label: "F", row: 4 },
+]
+
+const contributionLevel = (count) => {
   if (count === 0) return 0
   if (count <= 2) return 1
   if (count <= 5) return 2
@@ -25,14 +41,81 @@ const getContributionLevel = (count) => {
   return 4
 }
 
-const getDateWeekday = (date) => {
-  const weekday = new Date(`${date}T00:00:00`).getDay()
+const getWeekdayIndex = (date) => {
+  const weekday = new Date(
+    `${date}T00:00:00`
+  ).getDay()
 
-  return weekday === 0 ? 7 : weekday
+  return weekday === 0 ? 6 : weekday - 1
 }
 
-const getCurrentStreakDates = (calendar, currentStreak) => {
-  if (!calendar?.weeks?.length || currentStreak <= 0) {
+const getMonthLabel = (date) => {
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+  }).format(
+    new Date(`${date}T00:00:00`)
+  )
+}
+
+const getMonthStarts = (weeks) => {
+  const months = []
+  const seen = new Set()
+
+  weeks.forEach((week, weekIndex) => {
+    week.contributionDays.forEach((day) => {
+      const monthKey = day.date.slice(0, 7)
+
+      if (
+        day.date.endsWith("-01") &&
+        !seen.has(monthKey)
+      ) {
+        seen.add(monthKey)
+
+        months.push({
+          label: getMonthLabel(day.date),
+          weekIndex,
+        })
+      }
+    })
+  })
+
+  return months
+}
+
+/*
+ * Normalize every week into exactly seven weekday slots.
+ *
+ * Index:
+ * 0 → Monday
+ * 1 → Tuesday
+ * 2 → Wednesday
+ * 3 → Thursday
+ * 4 → Friday
+ * 5 → Saturday
+ * 6 → Sunday
+ *
+ * Missing dates remain null.
+ */
+const normalizeWeek = (week) => {
+  const rows = Array(7).fill(null)
+
+  week.contributionDays.forEach((day) => {
+    const weekday = getWeekdayIndex(day.date)
+
+    rows[weekday] = day
+  })
+
+  return rows
+}
+
+const getCurrentStreakDates = (
+  calendar,
+  currentStreak
+) => {
+  if (
+    !calendar?.weeks?.length ||
+    currentStreak <= 0
+  ) {
     return new Set()
   }
 
@@ -40,17 +123,20 @@ const getCurrentStreakDates = (calendar, currentStreak) => {
     (week) => week.contributionDays
   )
 
-  let startIndex = days.length - 1
+  let index = days.length - 1
 
-  if (days[startIndex]?.contributionCount === 0) {
-    startIndex -= 1
+  if (
+    days[index]?.contributionCount === 0
+  ) {
+    index -= 1
   }
 
   const streakDates = new Set()
 
   for (
-    let i = startIndex;
-    i >= 0 && streakDates.size < currentStreak;
+    let i = index;
+    i >= 0 &&
+    streakDates.size < currentStreak;
     i -= 1
   ) {
     if (days[i].contributionCount === 0) {
@@ -63,46 +149,92 @@ const getCurrentStreakDates = (calendar, currentStreak) => {
   return streakDates
 }
 
-const getMonthLabel = (date) => {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-  }).format(new Date(`${date}T00:00:00`))
+const getCellX = (weekIndex) => {
+  return (
+    GRAPH.labelWidth +
+    weekIndex *
+      (GRAPH.cellSize + GRAPH.gap)
+  )
 }
 
-const getWeekMonthLabels = (weeks) => {
-  let previousMonth = null
-  let previousYear = null
-
-  return weeks.map((week) => {
-    const firstDay = week.contributionDays[0]
-
-    if (!firstDay) {
-      return ""
-    }
-
-    const date = new Date(`${firstDay.date}T00:00:00`)
-    const month = date.getMonth()
-    const year = date.getFullYear()
-
-    const isNewMonth =
-      month !== previousMonth || year !== previousYear
-
-    const label = isNewMonth
-      ? getMonthLabel(firstDay.date)
-      : ""
-
-    previousMonth = month
-    previousYear = year
-
-    return label
-  })
+const getCellY = (rowIndex) => {
+  return (
+    GRAPH.monthRowHeight +
+    rowIndex *
+      (GRAPH.cellSize + GRAPH.gap)
+  )
 }
 
-const ActivityGraph = ({ calendar, stats, isLoading }) => {
+const ContributionTooltip = ({
+  day,
+  children,
+}) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger render={children} />
+
+      <TooltipContent
+        side="top"
+        align="center"
+        sideOffset={8}
+        collisionPadding={8}
+        className="border-zinc-800 bg-zinc-950 px-3 py-2 text-zinc-100 shadow-lg"
+      >
+        <p className="text-sm font-medium leading-5">
+          {day.contributionCount}{" "}
+          {day.contributionCount === 1
+            ? "contribution"
+            : "contributions"}{" "}
+          on{" "}
+          <span className="font-mono tabular-nums">
+            {day.date}
+          </span>
+        </p>
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+const ActivityGraph = ({
+  calendar,
+  stats,
+  isLoading,
+}) => {
+  const [focusedDate, setFocusedDate] =
+    useState(null)
+
+  const weeks = calendar?.weeks ?? []
+
+  /*
+   * Phase A:
+   * Normalize every week into seven fixed weekday
+   * positions before touching the rendering logic.
+   */
+  const normalizedWeeks = useMemo(() => {
+    return weeks.map(normalizeWeek)
+  }, [weeks])
+
+  const monthStarts = useMemo(() => {
+    return getMonthStarts(weeks)
+  }, [weeks])
+
+  const streakDates = useMemo(() => {
+    return getCurrentStreakDates(
+      calendar,
+      stats?.currentStreak
+    )
+  }, [
+    calendar,
+    stats?.currentStreak,
+  ])
+
   if (isLoading) {
     return (
-      <section className="space-y-8">
-        <div className="flex items-end justify-between gap-8">
+      <section
+        aria-label="Loading contribution activity"
+        className="space-y-8"
+      >
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
           <div className="space-y-3">
             <Skeleton className="h-12 w-80" />
             <Skeleton className="h-6 w-60" />
@@ -114,28 +246,54 @@ const ActivityGraph = ({ calendar, stats, isLoading }) => {
           </div>
         </div>
 
-        <Skeleton className="h-[320px] w-full rounded-md" />
+        <div className="w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <svg
+            width={GRAPH_WIDTH}
+            height={GRAPH_HEIGHT}
+            viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`}
+            aria-hidden="true"
+            className="block"
+          >
+            {Array.from({
+              length: GRAPH.weekCount,
+            }).map((_, weekIndex) =>
+              Array.from({
+                length: 7,
+              }).map((__, rowIndex) => (
+                <rect
+                  key={`${weekIndex}-${rowIndex}`}
+                  x={getCellX(weekIndex)}
+                  y={getCellY(rowIndex)}
+                  width={GRAPH.cellSize}
+                  height={GRAPH.cellSize}
+                  rx="2"
+                  fill="currentColor"
+                  className="animate-pulse text-muted"
+                />
+              ))
+            )}
+          </svg>
+        </div>
       </section>
     )
   }
 
-  if (!calendar?.weeks?.length) {
+  if (!weeks.length) {
     return null
   }
 
-  const streakDates = getCurrentStreakDates(
-    calendar,
-    stats?.currentStreak
-  )
-
-  const monthLabels = getWeekMonthLabels(calendar.weeks)
-
   return (
-    <section className="space-y-8">
+    <section
+      aria-labelledby="contribution-activity-heading"
+      className="space-y-8"
+    >
       {/* Header */}
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between sm:gap-8">
         <div className="space-y-3">
-          <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+          <h2
+            id="contribution-activity-heading"
+            className="text-4xl font-semibold tracking-tight sm:text-5xl"
+          >
             Contribution activity
           </h2>
 
@@ -158,126 +316,172 @@ const ActivityGraph = ({ calendar, stats, isLoading }) => {
         </div>
       </div>
 
-      {/* Graph */}
-      <div className="w-full overflow-x-auto rounded-md border border-border">
-        <div className="min-w-[1600px] p-6 sm:p-8 md:p-10">
-          {/* Month labels */}
-          <div className="flex">
-            <div className="w-10 shrink-0" />
+      {/* Contribution graph */}
+      <div className="w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="w-max">
+          <svg
+            width={GRAPH_WIDTH}
+            height={GRAPH_HEIGHT}
+            viewBox={`0 0 ${GRAPH_WIDTH} ${GRAPH_HEIGHT}`}
+            role="img"
+            aria-labelledby="contribution-graph-title contribution-graph-description"
+            className="block"
+          >
+            <title id="contribution-graph-title">
+              Contribution activity for the last year
+            </title>
 
-            <div className="flex gap-[7px]">
-              {monthLabels.map((label, index) => (
-                <div
-                  key={index}
-                  className="w-[26px] shrink-0 font-mono text-sm font-medium text-muted-foreground"
+            <desc id="contribution-graph-description">
+              A calendar heatmap showing daily
+              contribution activity across 53 weeks.
+            </desc>
+
+            {/* Month labels */}
+            {monthStarts.map(
+              ({ label, weekIndex }) => (
+                <text
+                  key={`${label}-${weekIndex}`}
+                  x={
+                    getCellX(weekIndex) +
+                    GRAPH.cellSize / 2
+                  }
+                  y={12}
+                  textAnchor="middle"
+                  aria-hidden="true"
+                  className="fill-muted-foreground font-mono text-[11px] font-medium"
                 >
                   {label}
-                </div>
-              ))}
-            </div>
-          </div>
+                </text>
+              )
+            )}
 
-          {/* Graph body */}
-          <div className="mt-5 flex gap-4">
             {/* Day labels */}
-            <div className="grid w-7 shrink-0 grid-rows-7 gap-[7px]">
-              {dayLabels.map((label, index) => (
-                <span
-                  key={index}
-                  className="flex h-[26px] items-center text-sm font-medium text-muted-foreground"
+            {dayLabels.map(
+              ({ label, row }) => (
+                <text
+                  key={`${label}-${row}`}
+                  x={GRAPH.labelWidth / 2}
+                  y={
+                    getCellY(row) +
+                    GRAPH.cellSize / 2
+                  }
+                  dominantBaseline="middle"
+                  textAnchor="middle"
+                  aria-hidden="true"
+                  className="fill-muted-foreground font-mono text-[10px] font-medium"
                 >
                   {label}
-                </span>
-              ))}
-            </div>
+                </text>
+              )
+            )}
 
-            {/* Week columns */}
-            <div className="flex gap-[7px]">
-              {calendar.weeks.map((week, weekIndex) => (
-                <div
-                  key={weekIndex}
-                  className="grid w-[26px] grid-rows-7 gap-[7px]"
-                >
-                  {week.contributionDays.map((day) => {
-                    const level = getContributionLevel(
+            {/* Normalized contribution cells */}
+            {normalizedWeeks.map(
+              (week, weekIndex) =>
+                week.map((day, rowIndex) => {
+                  /*
+                   * Missing dates remain null.
+                   *
+                   * We intentionally don't render anything
+                   * for them in Phase A. Their row position
+                   * is preserved by normalizedWeeks.
+                   */
+                  if (!day) {
+                    return null
+                  }
+
+                  const level =
+                    contributionLevel(
                       day.contributionCount
                     )
 
-                    const isCurrentStreak =
-                      streakDates.has(day.date)
+                  const isCurrentStreak =
+                    streakDates.has(day.date)
 
-                    const row = getDateWeekday(day.date)
+                  const isFocused =
+                    focusedDate === day.date
 
-                    return (
-                      <Tooltip key={day.date}>
-                        <TooltipTrigger
-                          render={
-                            <button
-                              type="button"
-                              aria-label={`${day.contributionCount} contributions on ${day.date}`}
-                              style={{
-                                gridRow: row,
-                              }}
-                              className={[
-                                "size-[26px] rounded-[5px]",
-                                contributionColors[level],
-                                "transition-opacity",
-                                "hover:opacity-80",
-                                "focus-visible:outline-none",
-                                "focus-visible:ring-2",
-                                "focus-visible:ring-ring",
-                                "focus-visible:ring-offset-2",
-                                "focus-visible:ring-offset-background",
-                                isCurrentStreak
-                                  ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
-                                  : "",
-                              ].join(" ")}
-                            />
-                          }
-                        />
+                  const x =
+                    getCellX(weekIndex)
 
-                        <TooltipContent>
-                          <p className="font-mono text-sm tabular-nums">
-                            {day.date}
-                          </p>
+                  const y =
+                    getCellY(rowIndex)
 
-                          <p className="mt-1 text-sm">
-                            {day.contributionCount}{" "}
-                            {day.contributionCount === 1
-                              ? "contribution"
-                              : "contributions"}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )
-                  })}
-                </div>
-              ))}
-            </div>
+                  return (
+                    <ContributionTooltip
+                      key={day.date}
+                      day={day}
+                    >
+                      <rect
+                        x={x}
+                        y={y}
+                        width={GRAPH.cellSize}
+                        height={GRAPH.cellSize}
+                        rx="2"
+                        fill={`var(--contrib-${level})`}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`${day.contributionCount} ${
+                          day.contributionCount === 1
+                            ? "contribution"
+                            : "contributions"
+                        } on ${day.date}`}
+                        className="cursor-pointer outline-none transition-[filter] duration-150 hover:brightness-110 focus-visible:brightness-110"
+                        stroke={
+                          isCurrentStreak
+                            ? "#fbbf24"
+                            : isFocused
+                              ? "hsl(var(--ring))"
+                              : "rgba(255,255,255,0.08)"
+                        }
+                        strokeWidth={
+                          isCurrentStreak ||
+                          isFocused
+                            ? 1.5
+                            : 0.6
+                        }
+                        onFocus={() =>
+                          setFocusedDate(
+                            day.date
+                          )
+                        }
+                        onBlur={() =>
+                          setFocusedDate(null)
+                        }
+                      />
+                    </ContributionTooltip>
+                  )
+                })
+            )}
+          </svg>
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex justify-end">
+        <div
+          className="flex items-center gap-2 text-sm text-muted-foreground"
+          aria-label="Contribution intensity legend"
+        >
+          <span>Less</span>
+
+          <div className="flex items-center gap-[2px]">
+            {[0, 1, 2, 3, 4].map(
+              (level) => (
+                <span
+                  key={level}
+                  aria-hidden="true"
+                  className="size-[11px] rounded-[2px] ring-1 ring-inset ring-white/10"
+                  style={{
+                    backgroundColor:
+                      `var(--contrib-${level})`,
+                  }}
+                />
+              )
+            )}
           </div>
 
-          {/* Legend */}
-          <div className="mt-10 flex items-center justify-between">
-            <span className="text-base font-medium text-muted-foreground">
-              Less
-            </span>
-
-            <div className="flex items-center gap-[7px]">
-              {Object.entries(contributionColors).map(
-                ([level, colorClass]) => (
-                  <span
-                    key={level}
-                    aria-hidden="true"
-                    className={`size-[26px] rounded-[5px] ${colorClass}`}
-                  />
-                )
-              )}
-            </div>
-
-            <span className="text-base font-medium text-muted-foreground">
-              More
-            </span>
-          </div>
+          <span>More</span>
         </div>
       </div>
 
