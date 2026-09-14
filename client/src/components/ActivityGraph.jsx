@@ -153,7 +153,7 @@ const getCellX = (weekIndex) => {
   return (
     GRAPH.labelWidth +
     weekIndex *
-      (GRAPH.cellSize + GRAPH.gap)
+    (GRAPH.cellSize + GRAPH.gap)
   )
 }
 
@@ -161,7 +161,7 @@ const getCellY = (rowIndex) => {
   return (
     GRAPH.monthRowHeight +
     rowIndex *
-      (GRAPH.cellSize + GRAPH.gap)
+    (GRAPH.cellSize + GRAPH.gap)
   )
 }
 
@@ -379,13 +379,9 @@ const ActivityGraph = ({
             {normalizedWeeks.map(
               (week, weekIndex) =>
                 week.map((day, rowIndex) => {
-                  /*
-                   * Missing dates remain null.
-                   *
-                   * We intentionally don't render anything
-                   * for them in Phase A. Their row position
-                   * is preserved by normalizedWeeks.
-                   */
+                  const x = getCellX(weekIndex)
+                  const y = getCellY(rowIndex)
+
                   if (!day) {
                     return null
                   }
@@ -401,11 +397,11 @@ const ActivityGraph = ({
                   const isFocused =
                     focusedDate === day.date
 
-                  const x =
-                    getCellX(weekIndex)
-
-                  const y =
-                    getCellY(rowIndex)
+                  const contributionLabel =
+                    `${day.contributionCount} ${day.contributionCount === 1
+                      ? "contribution"
+                      : "contributions"
+                    } on ${day.date}`
 
                   return (
                     <ContributionTooltip
@@ -421,11 +417,7 @@ const ActivityGraph = ({
                         fill={`var(--contrib-${level})`}
                         tabIndex={0}
                         role="button"
-                        aria-label={`${day.contributionCount} ${
-                          day.contributionCount === 1
-                            ? "contribution"
-                            : "contributions"
-                        } on ${day.date}`}
+                        aria-label={contributionLabel}
                         className="cursor-pointer outline-none transition-[filter] duration-150 hover:brightness-110 focus-visible:brightness-110"
                         stroke={
                           isCurrentStreak
@@ -436,14 +428,12 @@ const ActivityGraph = ({
                         }
                         strokeWidth={
                           isCurrentStreak ||
-                          isFocused
+                            isFocused
                             ? 1.5
                             : 0.6
                         }
                         onFocus={() =>
-                          setFocusedDate(
-                            day.date
-                          )
+                          setFocusedDate(day.date)
                         }
                         onBlur={() =>
                           setFocusedDate(null)
