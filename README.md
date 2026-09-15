@@ -6,6 +6,10 @@ Search a GitHub username to explore profile information, repository statistics, 
 
 > Activity insights are based on public GitHub activity only.
 
+### Profile dashboard
+
+![GitHub profile dashboard](docs/screenshots/profile-dashboard.png)
+
 ## What it does
 
 ### Profile analysis
@@ -19,6 +23,8 @@ Search any GitHub username and view:
 - Repository language distribution
 - Searchable and sortable repositories
 
+![Repository analytics and browsing](docs/screenshots/repo-list.png)
+
 ### Activity intelligence
 
 The dashboard goes beyond displaying contribution data by deriving patterns from contribution history:
@@ -30,6 +36,8 @@ The dashboard goes beyond displaying contribution data by deriving patterns from
 - Activity archetype such as `Sprint Coder`, `Weekend Warrior`, `Steady Committer`, or `Consistent Contributor`
 
 All interpreted activity is explicitly presented as being based on public activity only.
+
+![Activity analytics](docs/screenshots/activity-analytics.png)
 
 ### Compare profiles
 
@@ -49,6 +57,10 @@ The comparison includes:
 - Factual comparison insights
 
 The comparison intentionally avoids subjective claims such as declaring one developer "better".
+
+![GitHub profile comparison](docs/screenshots/compare-dashboard.png)
+
+![Comparison insights](docs/screenshots/compare-insights.png)
 
 ### Shareable snapshots
 
