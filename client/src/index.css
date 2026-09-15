@@ -93,6 +93,7 @@
   --contrib-2: #9de2c4;
   --contrib-3: #4bc594;
   --contrib-4: #16a36e;
+  --destructive-foreground: #ffffff;
 }
 
 .dark {
@@ -132,6 +133,7 @@
   --contrib-2: #165b47;
   --contrib-3: #208764;
   --contrib-4: #2bc58b;
+  --destructive-foreground: #09090b;
 }
 
 @layer base {

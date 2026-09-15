@@ -24,7 +24,15 @@ function SearchBar({ onSearch, isLoading }) {
 
   return (
     <div className="flex w-full max-w-md min-w-0 gap-2">
+      <label
+        htmlFor="github-username-search"
+        className="sr-only"
+      >
+        GitHub username
+      </label>
+
       <Input
+        id="github-username-search"
         type="text"
         value={username}
         placeholder="Enter GitHub username"
@@ -38,6 +46,7 @@ function SearchBar({ onSearch, isLoading }) {
         type="button"
         onClick={handleSearch}
         disabled={isLoading}
+        aria-busy={isLoading}
         className="shrink-0"
       >
         {isLoading ? (

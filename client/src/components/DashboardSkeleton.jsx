@@ -27,6 +27,8 @@ const DashboardSkeleton = () => {
         <Skeleton className="h-px w-full" />
       </section>
 
+      <ActivityGraphSkeleton />
+
       {/* StatRail skeleton */}
       <section className="border-y border-border py-5">
         <div className="flex gap-10">
@@ -61,8 +63,6 @@ const DashboardSkeleton = () => {
           ))}
         </div>
       </section>
-
-      <ActivityGraphSkeleton />
     </div>
   )
 }

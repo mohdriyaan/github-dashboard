@@ -299,7 +299,7 @@ const CompareProfiles = () => {
           </p>
         </div>
       ) : (
-        <div className="grid border-y border-border md:grid-cols-2 md:divide-x md:divide-border">
+        <div className="grid divide-y divide-border border-y border-border md:grid-cols-2 md:divide-y-0 md:divide-x md:divide-border">
           {PROFILE_LABELS.map((label, index) => (
             <ComparisonColumn
               key={label}

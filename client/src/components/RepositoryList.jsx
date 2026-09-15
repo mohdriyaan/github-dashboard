@@ -4,6 +4,13 @@ import { ExternalLink, GitFork, Star } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 import getLanguageColor from "../utils/languageColors.js"
 
@@ -156,34 +163,59 @@ const RepositoryList = ({ repos }) => {
             />
           </div>
 
-          <label className="min-w-0 sm:w-44">
-            <span className="sr-only">Filter repositories by language</span>
-            <select
-              value={languageFilter}
-              onChange={(event) => setLanguageFilter(event.target.value)}
-              className="h-8 w-full rounded-lg border border-input bg-background px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
-            >
-              <option value="all">All languages</option>
-              {languages.map((language) => (
-                <option key={language} value={language}>
-                  {language}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="min-w-0 sm:w-44">
+            <span className="sr-only" id="repository-language-label">
+              Filter repositories by language
+            </span>
 
-          <label className="min-w-0 sm:w-44">
-            <span className="sr-only">Sort repositories</span>
-            <select
-              value={sortBy}
-              onChange={(event) => setSortBy(event.target.value)}
-              className="h-8 w-full rounded-lg border border-input bg-background px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+            <Select
+              value={languageFilter}
+              onValueChange={setLanguageFilter}
             >
-              {SORT_OPTIONS.map(({ value, label }) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
-          </label>
+              <SelectTrigger
+                aria-labelledby="repository-language-label"
+                className="w-full"
+              >
+                <SelectValue placeholder="All languages" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="all">All languages</SelectItem>
+
+                {languages.map((language) => (
+                  <SelectItem key={language} value={language}>
+                    {language}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="min-w-0 sm:w-44">
+            <span className="sr-only" id="repository-sort-label">
+              Sort repositories
+            </span>
+
+            <Select
+              value={sortBy}
+              onValueChange={setSortBy}
+            >
+              <SelectTrigger
+                aria-labelledby="repository-sort-label"
+                className="w-full"
+              >
+                <SelectValue placeholder="Sort repositories" />
+              </SelectTrigger>
+
+              <SelectContent>
+                {SORT_OPTIONS.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -198,75 +230,75 @@ const RepositoryList = ({ repos }) => {
                 key={repo.id || repo.html_url || `${getRepositoryName(repo)}-${index}`}
                 className="py-6 sm:py-7"
               >
-              <div className="flex items-start justify-between gap-8">
-                <div className="min-w-0 flex-1 space-y-4">
-                  <a
-                    href={repo.html_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group inline-flex max-w-full items-center gap-2 rounded-sm px-1 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                  >
-                    <h3 className="text-xl font-semibold tracking-tight">
-                      {repo.name}
-                    </h3>
+                <div className="flex items-start justify-between gap-8">
+                  <div className="min-w-0 flex-1 space-y-4">
+                    <a
+                      href={repo.html_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group inline-flex max-w-full items-center gap-2 rounded-sm px-1 py-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    >
+                      <h3 className="text-xl font-semibold tracking-tight">
+                        {repo.name}
+                      </h3>
 
-                    <ExternalLink
-                      className="size-4 text-muted-foreground transition-opacity group-hover:opacity-70"
-                      aria-hidden="true"
-                    />
-                  </a>
+                      <ExternalLink
+                        className="size-4 text-muted-foreground transition-opacity group-hover:opacity-70"
+                        aria-hidden="true"
+                      />
+                    </a>
 
-                  <p className="max-w-4xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-                    {repo.description || "No description"}
-                  </p>
+                    <p className="max-w-4xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+                      {repo.description || "No description"}
+                    </p>
 
-                  <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
-                    {language && (
+                    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
+                      {language && (
+                        <span className="inline-flex items-center gap-2">
+                          <span
+                            aria-hidden="true"
+                            className="size-2.5 rounded-full"
+                            style={{
+                              backgroundColor:
+                                languageColor || "transparent",
+                            }}
+                          />
+
+                          <span>{language}</span>
+                        </span>
+                      )}
+
                       <span className="inline-flex items-center gap-2">
-                        <span
+                        <Star
+                          className="size-4"
                           aria-hidden="true"
-                          className="size-2.5 rounded-full"
-                          style={{
-                            backgroundColor:
-                              languageColor || "transparent",
-                          }}
                         />
 
-                        <span>{language}</span>
-                      </span>
-                    )}
+                        <span className="font-mono tabular-nums">
+                          {repo.stargazers_count ?? 0}
+                        </span>
 
-                    <span className="inline-flex items-center gap-2">
-                      <Star
-                        className="size-4"
-                        aria-hidden="true"
-                      />
-
-                      <span className="font-mono tabular-nums">
-                        {repo.stargazers_count ?? 0}
+                        <span>stars</span>
                       </span>
 
-                      <span>stars</span>
-                    </span>
+                      <span className="inline-flex items-center gap-2">
+                        <GitFork
+                          className="size-4"
+                          aria-hidden="true"
+                        />
 
-                    <span className="inline-flex items-center gap-2">
-                      <GitFork
-                        className="size-4"
-                        aria-hidden="true"
-                      />
+                        <span className="font-mono tabular-nums">
+                          {repo.forks_count ?? 0}
+                        </span>
 
-                      <span className="font-mono tabular-nums">
-                        {repo.forks_count ?? 0}
+                        <span>forks</span>
                       </span>
-
-                      <span>forks</span>
-                    </span>
-                    <span>
-                      Updated {formatUpdatedDate(repo.updated_at)}
-                    </span>
+                      <span>
+                        Updated {formatUpdatedDate(repo.updated_at)}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
               </article>
             )
           })}
