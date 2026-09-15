@@ -78,8 +78,8 @@ Comparison snapshots can also be:
 
 - Node.js
 - Express
-- GitHub API
-- MongoDB
+- GitHub REST API
+- GitHub GraphQL API
 
 ### Engineering
 
@@ -117,9 +117,9 @@ github-dashboard/
 
 - Node.js
 - npm
-- A GitHub API setup configured for the backend
+- A GitHub personal access token configured as `GITHUB_TOKEN`
 
-### Install
+### Installation
 
 Clone the repository and install dependencies:
 
@@ -129,7 +129,19 @@ cd github-dashboard
 npm install
 cd client
 npm install
+cd ../server
+npm install
 ```
+
+### Environment Variables
+
+Create a .env file inside the server directory:
+
+```env
+GITHUB_TOKEN=your_github_token
+```
+
+The token is used by the backend when requesting contribution data through GitHub's GraphQL API.
 
 ### Run the project
 
