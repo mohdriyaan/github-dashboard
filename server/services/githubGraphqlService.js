@@ -1,5 +1,6 @@
 import dotenv from "dotenv"
 import { normalizeGithubContributionCalendar } from "../../shared/contributionCalendar.js"
+import { contributionsCache } from "../utils/ttlCache.js"
 
 dotenv.config()
 
@@ -15,14 +16,14 @@ const query = `
             year
           }
           weeks {
-          firstDay
-          contributionDays {
-            date
-            contributionCount
-            contributionLevel
-            weekday
+            firstDay
+            contributionDays {
+              date
+              contributionCount
+              contributionLevel
+              weekday
+            }
           }
-        }
         }
       }
     }
@@ -45,32 +46,46 @@ export const getContributionRange = (now = new Date()) => {
     59,
     999
   ))
+
   const from = new Date(to)
   from.setUTCDate(from.getUTCDate() - 364)
 
-  return { from: from.toISOString(), to: to.toISOString() }
+  return {
+    from: from.toISOString(),
+    to: to.toISOString(),
+  }
 }
 
 async function getContributions(username) {
+  const key = username.trim().toLowerCase()
+  const cachedCalendar = contributionsCache.get(key)
+
+  if (cachedCalendar) {
+    return cachedCalendar
+  }
+
   const range = getContributionRange()
+
   const res = await fetch("https://api.github.com/graphql", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`
+      Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
     },
     body: JSON.stringify({
       query,
       variables: {
-        username,
-        ...range
-      }
-    })
+        username: key,
+        ...range,
+      },
+    }),
   })
 
-
   if (!res.ok) {
-    throw createError(`GitHub request failed with status ${res.status}`, res.status)
+    throw createError(
+      `GitHub request failed with status ${res.status}`,
+      res.status
+    )
   }
 
   const data = await res.json()
@@ -92,6 +107,8 @@ async function getContributions(username) {
   const contributionCalendar = normalizeGithubContributionCalendar(
     data.data.user.contributionsCollection.contributionCalendar
   )
+
+  contributionsCache.set(key, contributionCalendar)
 
   return contributionCalendar
 }

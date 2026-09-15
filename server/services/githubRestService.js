@@ -1,3 +1,7 @@
+import { profileCache, reposCache } from "../utils/ttlCache.js"
+
+const normalizeUsername = (username) => username.trim().toLowerCase()
+
 const getGitHubErrorStatus = (res) => {
   const remaining = res.headers.get("x-ratelimit-remaining")
 
@@ -25,28 +29,46 @@ const handleGitHubError = async (res, fallbackMessage) => {
 }
 
 const getUser = async (username) => {
-  const res = await fetch(`https://api.github.com/users/${username}`)
+  const key = normalizeUsername(username)
+  const cachedUser = profileCache.get(key)
+
+  if (cachedUser) {
+    return cachedUser
+  }
+
+  const res = await fetch(`https://api.github.com/users/${encodeURIComponent(key)}`)
 
   if (!res.ok) {
     await handleGitHubError(res, "Unable to fetch GitHub user")
   }
 
-  return res.json()
+  const user = await res.json()
+  profileCache.set(key, user)
+
+  return user
 }
 
 const getUserRepos = async (username) => {
+  const key = normalizeUsername(username)
+  const cachedRepos = reposCache.get(key)
+
+  if (cachedRepos) {
+    return cachedRepos
+  }
+
   const allRepos = []
   let page = 1
 
   while (true) {
-    const res = await fetch(`https://api.github.com/users/${username}/repos?page=${page}&per_page=100`)
+    const res = await fetch(
+      `https://api.github.com/users/${encodeURIComponent(key)}/repos?page=${page}&per_page=100`
+    )
 
     if (!res.ok) {
       await handleGitHubError(res, "Unable to fetch GitHub repositories")
     }
 
     const repos = await res.json()
-
     allRepos.push(...repos)
 
     if (repos.length < 100) {
@@ -55,6 +77,8 @@ const getUserRepos = async (username) => {
 
     page += 1
   }
+
+  reposCache.set(key, allRepos)
 
   return allRepos
 }
