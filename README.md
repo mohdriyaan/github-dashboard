@@ -6,6 +6,10 @@ Search a GitHub username to explore profile information, repository statistics, 
 
 > Activity insights are based on public GitHub activity only.
 
+## Live Demo
+
+[GitHub Dashboard](https://github-dashboard-jp4t.onrender.com)
+
 ### Profile dashboard
 
 ![GitHub profile dashboard](docs/screenshots/profile-dashboard.png)
