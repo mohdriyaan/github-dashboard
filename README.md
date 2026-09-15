@@ -109,4 +109,88 @@ github-dashboard/
 ├── test/
 ├── package.json
 └── README.md
+```
 
+## Getting started
+
+### Prerequisites
+
+- Node.js
+- npm
+- A GitHub API setup configured for the backend
+
+### Install
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/mohdriyaan/github-dashboard.git
+cd github-dashboard
+npm install
+cd client
+npm install
+```
+
+### Run the project
+
+Start the backend and frontend according to the project's development scripts.
+
+The frontend is built with Vite and the root project delegates production builds to the client package.
+
+### Testing
+
+Run the complete test suite from the project root:
+
+```bash
+npm test
+```
+
+Build the production frontend:
+
+```bash
+npm run build
+```
+
+Run linting:
+
+```bash
+npm run lint
+```
+
+## Design principles
+
+The project is intentionally designed around a few principles:
+
+*Data before decoration*
+Every major UI element should communicate useful information.
+
+*Interpretation over repetition*
+The dashboard should derive meaningful patterns instead of simply repeating raw GitHub fields.
+
+*Shareable output*
+Important analysis should be capable of becoming an artifact that can be copied or saved.
+
+*Public-data transparency*
+Interpretations are clearly identified as being based on public activity.
+
+*Responsive by default*
+Dense data such as contribution graphs remains usable on smaller screens rather than being forced into an unreadable layout.
+
+*Accessible interaction*
+Keyboard navigation, visible focus states, semantic labels, and loading/error feedback are treated as part of the product rather than an afterthought.
+
+## Roadmap
+
+Potential future improvements include:
+
+- More analytical activity signals
+- Additional snapshot formats
+- Persistent comparison links
+- Improved repository analytics
+- Historical activity comparisons
+
+## Author
+
+Mohammed Riyaan
+
+GitHub: https://github.com/mohdriyaan
