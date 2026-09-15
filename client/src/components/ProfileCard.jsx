@@ -13,6 +13,8 @@ import {
 
 import { Separator } from "@/components/ui/separator"
 
+import formatNumber from "../utils/formatNumber.js"
+
 const getInitials = (name, username) => {
   const value = name || username || ""
 
@@ -86,7 +88,7 @@ const ProfileCard = ({ profile }) => {
                 />
 
                 <span className="font-mono tabular-nums">
-                  {profile.followers}
+                  {formatNumber(profile.followers)}
                 </span>
 
                 followers
@@ -99,7 +101,7 @@ const ProfileCard = ({ profile }) => {
                 />
 
                 <span className="font-mono tabular-nums">
-                  {profile.public_repos}
+                  {formatNumber(profile.public_repos)}
                 </span>
 
                 repos

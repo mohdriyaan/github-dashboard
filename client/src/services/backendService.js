@@ -72,14 +72,26 @@ const getComparisonProfileData = async (username) => {
     return {
       username,
       profile,
-      repos: reposResult.status === "fulfilled" ? reposResult.value.repos : [],
-      stats: contributionsResult.status === "fulfilled"
-        ? contributionsResult.value.stats
-        : null,
-      reposError: reposResult.status === "rejected" ? reposResult.reason : null,
-      contributionsError: contributionsResult.status === "rejected"
-        ? contributionsResult.reason
-        : null,
+      repos:
+        reposResult.status === "fulfilled"
+          ? reposResult.value.repos
+          : [],
+      stats:
+        contributionsResult.status === "fulfilled"
+          ? contributionsResult.value.stats
+          : null,
+      contributionCalendar:
+        contributionsResult.status === "fulfilled"
+          ? contributionsResult.value.contributionCalendar
+          : null,
+      reposError:
+        reposResult.status === "rejected"
+          ? reposResult.reason
+          : null,
+      contributionsError:
+        contributionsResult.status === "rejected"
+          ? contributionsResult.reason
+          : null,
       profileError: null,
     }
   } catch (error) {
@@ -88,6 +100,7 @@ const getComparisonProfileData = async (username) => {
       profile: null,
       repos: [],
       stats: null,
+      contributionCalendar: null,
       reposError: null,
       contributionsError: null,
       profileError: error,

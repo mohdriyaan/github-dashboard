@@ -1,4 +1,5 @@
 import { Star, GitFork, Code2 } from "lucide-react"
+import formatNumber from "../utils/formatNumber.js"
 
 const StatsGrid = ({ stats }) => {
   return (
@@ -11,7 +12,7 @@ const StatsGrid = ({ stats }) => {
           />
 
           <span className="font-mono text-lg font-semibold tabular-nums sm:text-xl">
-            {stats?.totalStars ?? 0}
+            {formatNumber(stats?.totalStars)}
           </span>
 
           <span className="text-sm text-muted-foreground sm:text-base">
@@ -26,7 +27,7 @@ const StatsGrid = ({ stats }) => {
           />
 
           <span className="font-mono text-lg font-semibold tabular-nums sm:text-xl">
-            {stats?.totalForks ?? 0}
+            {formatNumber(stats?.totalForks)}
           </span>
 
           <span className="text-sm text-muted-foreground sm:text-base">

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { Activity } from "lucide-react"
 
 import {
@@ -20,6 +20,12 @@ import EmptyState from "./components/EmptyState.jsx"
 import ErrorState from "./components/ErrorState.jsx"
 import LandingState from "./components/LandingState.jsx"
 import CompareProfiles from "./components/CompareProfiles.jsx"
+import LanguageMix from "./components/LanguageMix.jsx"
+import ActivityInsights from "./components/ActivityInsights.jsx"
+import { calculateActivityInsights } from "../../shared/activityInsights.js"
+import { normalizeContributionDays } from "../../shared/contributionCalendar.js"
+
+import ActivitySnapshot from "./components/ActivitySnapshot.jsx"
 
 function App() {
   const [isCompareView, setIsCompareView] = useState(false)
@@ -42,6 +48,29 @@ function App() {
   const requestIdRef = useRef(0)
 
   const stats = repoStats(repos)
+
+  const activityInsights = useMemo(() => {
+    if (!contributionCalendar) {
+      return null
+    }
+
+    const days = normalizeContributionDays(
+      contributionCalendar
+    )
+
+    return calculateActivityInsights({
+      days,
+      totalContributions:
+        contributionStats?.totalContributions ?? 0,
+      currentStreak:
+        contributionStats?.currentStreak ?? 0,
+      longestStreak:
+        contributionStats?.longestStreak ?? 0,
+    })
+  }, [
+    contributionCalendar,
+    contributionStats,
+  ])
 
   async function getUserData(username) {
     const requestId = ++requestIdRef.current
@@ -208,138 +237,152 @@ function App() {
         isCompareView={isCompareView}
       />
 
-      <main className="mx-auto w-full max-w-[1440px] px-6 py-10">
+      <main className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         {isCompareView ? <CompareProfiles /> : (
           <div className="space-y-14">
 
-          {/* Landing state — shown before the first search */}
-          {!isLoading &&
-            !profileError &&
-            !profile && (
-              <LandingState />
-            )}
+            {/* Landing state — shown before the first search */}
+            {!isLoading &&
+              !profileError &&
+              !profile && (
+                <LandingState />
+              )}
 
-          {/* Loading state */}
-          {isLoading && <DashboardSkeleton />}
+            {/* Loading state */}
+            {isLoading && <DashboardSkeleton />}
 
-          {/* Profile error */}
-          {!isLoading &&
-            profileError &&
-            !profile && (
-              <ErrorState
-                title="Unable to load profile"
-                description={profileError}
-                actionLabel="Try again"
-                onAction={retryProfile}
-                isLoading={isProfileLoading}
-              />
-            )}
+            {/* Profile error */}
+            {!isLoading &&
+              profileError &&
+              !profile && (
+                <ErrorState
+                  title="Unable to load profile"
+                  description={profileError}
+                  actionLabel="Try again"
+                  onAction={retryProfile}
+                  isLoading={isProfileLoading}
+                />
+              )}
 
-          {/* Profile */}
-          {!isLoading && profile && (
-            isProfileLoading ? (
-              <section
-                aria-label="Loading profile"
-                className="border-y border-border py-6 sm:py-7"
-              >
-                <div className="flex animate-pulse flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="flex min-w-0 items-start gap-4 sm:gap-5">
-                    <div className="size-20 shrink-0 rounded-full bg-muted sm:size-24" />
+            {/* Profile */}
+            {!isLoading && profile && (
+              isProfileLoading ? (
+                <section
+                  aria-label="Loading profile"
+                  className="border-y border-border py-6 sm:py-7"
+                >
+                  <div className="flex animate-pulse flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+                    <div className="flex min-w-0 items-start gap-4 sm:gap-5">
+                      <div className="size-20 shrink-0 rounded-full bg-muted sm:size-24" />
 
-                    <div className="min-w-0 space-y-3">
-                      <div className="h-8 w-48 rounded bg-muted" />
-                      <div className="h-4 w-32 rounded bg-muted" />
-                      <div className="h-4 w-full max-w-2xl rounded bg-muted" />
-                      <div className="h-4 w-3/4 max-w-xl rounded bg-muted" />
+                      <div className="min-w-0 space-y-3">
+                        <div className="h-8 w-48 rounded bg-muted" />
+                        <div className="h-4 w-32 rounded bg-muted" />
+                        <div className="h-4 w-full max-w-2xl rounded bg-muted" />
+                        <div className="h-4 w-3/4 max-w-xl rounded bg-muted" />
+                      </div>
                     </div>
+
+                    <div className="h-10 w-28 rounded bg-muted" />
                   </div>
-
-                  <div className="h-10 w-28 rounded bg-muted" />
-                </div>
-              </section>
-            ) : (
-              <ProfileCard profile={profile} />
-            )
-          )}
-
-          {/* Contribution activity */}
-          {!isLoading && profile && (
-            contributionsError ? (
-              <ErrorState
-                icon={Activity}
-                title="Unable to load contributions"
-                description={contributionsError}
-                actionLabel="Try again"
-                onAction={retryContributions}
-                isLoading={isContributionsLoading}
-              />
-            ) : isContributionsLoading ? (
-              <ActivityGraph isLoading />
-            ) : contributionCalendar &&
-              contributionStats ? (
-              <ActivityGraph
-                calendar={contributionCalendar}
-                stats={contributionStats}
-                isLoading={false}
-              />
-            ) : (
-              <EmptyState
-                icon={Activity}
-                title="No contribution activity"
-                description="There is no contribution activity available for this profile."
-              />
-            )
-          )}
-
-          {/* Repository stats */}
-          {!isLoading &&
-            profile &&
-            !reposError &&
-            repos.length > 0 && (
-              <StatsGrid stats={stats} />
+                </section>
+              ) : (
+                <ProfileCard profile={profile} />
+              )
             )}
 
-          {/* Repositories */}
-          {!isLoading && profile && (
-            reposError ? (
-              <ErrorState
-                title="Unable to load repositories"
-                description={reposError}
-                actionLabel="Try again"
-                onAction={retryRepos}
-                isLoading={isReposLoading}
-              />
-            ) : isReposLoading ? (
-              <section
-                aria-label="Loading repositories"
-                className="border-y border-border py-6 sm:py-7"
-              >
-                <div className="space-y-6">
-                  {[1, 2, 3].map((item) => (
-                    <div
-                      key={item}
-                      className="animate-pulse border-b border-border pb-6 last:border-b-0 last:pb-0 sm:pb-7"
-                    >
-                      <div className="h-5 w-2/5 rounded bg-muted" />
+            {/* Contribution activity */}
+            {!isLoading && profile && (
+              contributionsError ? (
+                <ErrorState
+                  icon={Activity}
+                  title="Unable to load contributions"
+                  description={contributionsError}
+                  actionLabel="Try again"
+                  onAction={retryContributions}
+                  isLoading={isContributionsLoading}
+                />
+              ) : isContributionsLoading ? (
+                <ActivityGraph isLoading />
+              ) : contributionCalendar &&
+                contributionStats ? (
+                <>
+                  <ActivityGraph
+                    calendar={contributionCalendar}
+                    stats={contributionStats}
+                    isLoading={false}
+                  />
 
-                      <div className="mt-3 h-4 w-full max-w-2xl rounded bg-muted" />
+                  <ActivityInsights insights={activityInsights} />
+                  
+                  <ActivitySnapshot
+                    profile={profile}
+                    stats={contributionStats}
+                    insights={activityInsights}
+                  />
+                </>
+              ) : (
+                <EmptyState
+                  icon={Activity}
+                  title="No contribution activity"
+                  description="There is no contribution activity available for this profile."
+                />
+              )
+            )}
 
-                      <div className="mt-2 h-4 w-3/4 max-w-xl rounded bg-muted" />
+            {/* Repository stats */}
+            {!isLoading &&
+              profile &&
+              !reposError &&
+              repos.length > 0 && (
+                <StatsGrid stats={stats} />
+              )}
 
-                      <div className="mt-4 h-4 w-32 rounded bg-muted" />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ) : repos.length > 0 ? (
-              <RepositoryList repos={repos} />
-            ) : (
-              <EmptyState
-                title="No repositories"
-                description="This profile doesn't have any public repositories."
-              />
-            )
-          )}
+            {/* Repositories */}
+            {!isLoading && profile && (
+              reposError ? (
+                <ErrorState
+                  title="Unable to load repositories"
+                  description={reposError}
+                  actionLabel="Try again"
+                  onAction={retryRepos}
+                  isLoading={isReposLoading}
+                />
+              ) : isReposLoading ? (
+                <section
+                  aria-label="Loading repositories"
+                  className="border-y border-border py-6 sm:py-7"
+                >
+                  <div className="space-y-6">
+                    {[1, 2, 3].map((item) => (
+                      <div
+                        key={item}
+                        className="animate-pulse border-b border-border pb-6 last:border-b-0 last:pb-0 sm:pb-7"
+                      >
+                        <div className="h-5 w-2/5 rounded bg-muted" />
+
+                        <div className="mt-3 h-4 w-full max-w-2xl rounded bg-muted" />
+
+                        <div className="mt-2 h-4 w-3/4 max-w-xl rounded bg-muted" />
+
+                        <div className="mt-4 h-4 w-32 rounded bg-muted" />
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              ) : repos.length > 0 ? (
+                <>
+                  <LanguageMix languageCounts={stats.languageCounts} />
+                  <RepositoryList repos={repos} />
+                </>
+
+              ) : (
+                <EmptyState
+                  title="No repositories"
+                  description="This profile doesn't have any public repositories."
+                />
+              )
+            )}
           </div>
         )}
       </main>
